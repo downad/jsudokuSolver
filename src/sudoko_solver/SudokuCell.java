@@ -1,13 +1,16 @@
 package sudoko_solver;
 
+import java.util.ArrayList;
+
 public class SudokuCell {
 	
-	private static String cellName = "";
-	private static int row = 0;
-	private static int col = 0;
-	private static int value = 0;
-	private static boolean isSolved = false;
-	private static int isSolvedBy = 0;
+	private String cellName = "";
+	private int value = 0;
+	private boolean isSolved = false;
+	private int isSolvedBy = 0;
+	private boolean[] possibleCellNumbers = {true,false,false,false,false,false,false,false,false,false};
+	private int row = 0;
+	private int col = 0;
 	
 	
 	public SudokuCell(int initRow, int initCol, int initValue, boolean initIsSolved, int initIsSolvedBy) {
@@ -24,8 +27,16 @@ public class SudokuCell {
 			ValueCheckIsOK = false;
 		}
 		if (ValueCheckIsOK) {
-			setCoordinate( initRow, initCol);
-			setValue ( initValue, initIsSolved, initIsSolvedBy);
+			cellName = "" + initRow + initCol;
+			row = initRow;
+			col = initCol;		
+			System.out.println("row = " + initRow + " col = " + initCol + " name = " + cellName);
+			
+			//setCoordinate( initRow, initCol);
+			//setValue ( initValue, initIsSolved, initIsSolvedBy);
+			value = initValue;
+			isSolved = initIsSolved;
+			isSolvedBy = initIsSolvedBy;
 			
 		}
 	}
@@ -38,114 +49,56 @@ public class SudokuCell {
 		col = initCol;		
 		System.out.println("row = " + initRow + " col = " + initCol + " name = " + cellName);
 	}
-	public void setValue ( int Value, boolean IsSolved, int IsSolvedBy) {
+	public void setCellValue ( int Value, boolean IsSolved, int IsSolvedBy) {
 		value = Value;
 		isSolved = IsSolved;
 		isSolvedBy = IsSolvedBy;
 	}
-	public static int getValue(){
+	public int getCellValue(){
 		//System.out.println("row = " + row + " col = " + col + " Value = " + String.valueOf(value));
-		return value;
+		int returnint = value;
+		return returnint;
 	}
-	public static String getName(){
+	public String getName(){
 		return cellName;
 	}
-/*
-		def coordinate
-			return @coordinate
-		end
-
-		def row
-			return @row
-		end
-
-		def col
-			return @col
-		end
-
-		def block
-			return @block
-		end
-
-		def value
-			return @value
-		end
-
-		def b_given
-			return @b_given
-		end
-
-		def b_solved
-			return @b_solved
-		end
-
-		def solved(number, string)
-			@value = number
-			@b_solved = true
-			@solved_by = string
-			@h_candidates[0] = "solved"
-			@a_modified_by << "solved by #{string}"
-			return true
-		end
+	public void setPossibleCellNumber(int Value) {
+		possibleCellNumbers[Value] = true;
+	}
+	public void clearPossibleCellNumber(int Value) {
+		possibleCellNumbers[Value] = false;
+	}
+	public ArrayList<Integer> getPossibleCellNumber() {
+		ArrayList<Integer> returnint = new ArrayList<Integer>();
+		for (int i = 1; i<= jsudokuSolver.MAXNUMBER; i++){
+			if (possibleCellNumbers[i] = true) {
+				returnint.add(i);
+			}
+		}
+		return returnint;
+	}
+	public String getPosibleCellNumberAsStringTable(){
+		String returnstring = "<table style=\"font-size:9px\" border=0><tr>";
+		String tdValue = "";
+		if (isSolved == true) {
+			return "<table style=\"font-size:1.2em\" border=0><tr><td>" + value + "</td></tr></table>";}
 		
-		def solved_by
-			return @solved_by
-		end
-
-		def get_candidates
-			return @h_candidates.clone
-		end
-		
-		def set_candidates(candidates_in_cell)
-			@h_candidates[0] = "g"
-			candidates_in_cell.each do |key, value|
-				@h_candidates[key] = value 
-			end
-		end
-
-		def delete_candidate(value, modified_by)
-			debug_YesNo = false
-			returnvalue = true
-			puts "delete_candidate - #{value} - #{modified_by} coordiante = #{coordinate}" if debug_YesNo == true
-				if @h_candidates[0] == "g" 
-					if @h_candidates[value] == 1
-						puts "delete_candidate - #{value} - #{modified_by} " if debug_YesNo == true
-						puts "delete_candidate -h_candidates =  #{@h_candidates} - value == #{value} " if debug_YesNo == true
-						puts "delete_candidate -h_candidates =  #{@h_candidates[value]} == 1" if debug_YesNo == true
-						@h_candidates.each { |key, candidate_value| puts "key = #{key} - Value = #{candidate_value}" } if debug_YesNo == true
-						@h_candidates[value] = 0
-						@a_modified_by << ["#{value} gelöscht durch #{modified_by}", value, modified_by]
-					end
-				else
-					returnvalue = false
-				end
-			return returnvalue
-		end
-		
-		def modified_by
-			return @a_modified_by.clone
-		end
-
-		def print_cell
-			returnstring = ""
-			returnstring << "##########################################################################"
-			returnstring << "\n Zelle(#{@coordinate}) - die Werte:"
-			returnstring << "\n @coordinate - #{@coordinate}"
-			returnstring << "\n @row - #{@row}"
-			returnstring << "\n @col - #{@col}"
-			returnstring << "\n @block - #{@block}"
-			returnstring << "\n @value - #{@value}"
-			returnstring << "\n @b_given - #{@b_given}"
-			returnstring << "\n @b_solved - #{@b_solved}"
-			returnstring << "\n @solved_by - #{@solved_by}"
-			returnstring << "\n h_candidates[0] = n - erlaubte Zahlen müssen noch angelegt werden" if @h_candidates[0] == "n"
-			returnstring << "\n h_candidates[0] = g - Die Liste der erlaubten Zahlen ist erstellt " if @h_candidates[0] == "g"
-			returnstring << "\n h_candidates[0] = solved  - Die Zelle ist schon gelöst" if @h_candidates[0] == "solved"
-			returnstring << "\n @h_candidates - #{@h_candidates}"
-			returnstring << "\n @a_modified_by - #{@a_modified_by}"
-			returnstring << "\n ##########################################################################"
-			return returnstring 
-		end
-	end
-	*/
+		for (int i = 1; i<= jsudokuSolver.MAXNUMBER; i++){
+			if (possibleCellNumbers[i] = true ) {
+				tdValue = String.valueOf(i);
+			} else {
+				tdValue = " ";
+			}
+			returnstring = returnstring + "<td>" + tdValue + "</td>";
+			if (i % 3 == 0) {
+				returnstring = returnstring + "</tr>"; 
+				if (i < 9) {
+					returnstring = returnstring + "<tr>";
+				}
+			}
+	
+		}
+		returnstring = returnstring + "</table>";
+		return returnstring;
+	}
 }

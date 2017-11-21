@@ -18,32 +18,32 @@ public class MainGUI extends JFrame {
 	private static String WindowTitle = "Sudoku - My Sudoku-Solver mit Java";
 	
 	// Größe des Fensters
-	private static int WindowWidth = 1000;
-	private static int WindowHeight = 640;
+	private static int WindowWidth = 1200;
+	private static int WindowHeight =970;
 	// Position des Fensters
 	private static int WindowLocX = 150;
-	private static int WindowLocY = 150;
+	private static int WindowLocY = 50;
 	
 	// Titel / Position / Größe der Framebereiche
 	private static String TopTitle = "Sudoku-Lösungs-Strategien";
-	private static int TopPaneWidth = 950;
+	private static int TopPaneWidth = 1150;
 	private static int TopPaneHeight = 100;
 	
 	private static String LeftTitle = "Sudokufeld";
-	private static int lhsWidth = 440;
-	private static int lhsHeight = 440;
+	private static int lhsWidth = 580;
+	private static int lhsHeight = 770;
 	
 	JTextPane rhsPane = new JTextPane();
 	private static String RightTitle = "Sudoku Hilfen";
-	private static int rhsWidth = 440;
-	private static int rhsHeight = 440;
-	private static int rhsPaneWidth = 400;
-	private static int rhsPaneHeight = 350;
+	private static int rhsWidth = 580;
+	private static int rhsHeight = 770;
+	private static int rhsPaneWidth = 570;
+	private static int rhsPaneHeight = 750;
 	
 	private static String CenterTitle = "Spacer";
 	
 	private static String BottomTitle = "Ausgabefilter";
-	private static int BottomPaneWidth = 950;
+	private static int BottomPaneWidth = 1150;
 	private static int BottomPaneHeight = 100;
 	
 	// buttons

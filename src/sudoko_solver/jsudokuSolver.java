@@ -28,10 +28,15 @@ public class jsudokuSolver {
 				//System.out.println("row = " + row + " col = " + col + " Value = " + String.valueOf(cell[row][col].getValue()));
 				//System.out.println(cell);
 				//System.out.println(" str -> " + cell.get(str).getName());
+
+				
 			}
 		}
 		createSudoku();
-		
+		//SudokuCell a = new SudokuCell(1,2,3,true,1);
+		//SudokuCell b = new SudokuCell(4,5,6,true,1);
+		//System.out.println(" a -> " + a.getName());
+		//System.out.println(" b -> " + b.getName());
 		MainGUI gui = new MainGUI();
 	    
 	}
@@ -39,35 +44,35 @@ public class jsudokuSolver {
 	private static void createSudoku(){
 		// setValue ( int Value, boolean IsSolved, int IsSolvedBy)
 		//	IsSolvedBy 1 = Vorgabe / default
-		cell.get(""+1+1).setValue(3, true, 1);
-		System.out.println(" str -> " + cell.get(""+1+1).getName() + " value = " + cell.get(""+1+1).getValue());
-		cell.get(""+1+5).setValue(5, true, 1);
-		cell.get(""+1+7).setValue(9, true, 1);
-		cell.get(""+2+1).setValue(2, true, 1);
-		cell.get(""+2+6).setValue(8, true, 1);
-		cell.get(""+2+7).setValue(4, true, 1);
-		cell.get(""+2+9).setValue(5, true, 1);
-		cell.get(""+3+4).setValue(2, true, 1);
-		cell.get(""+3+7).setValue(3, true, 1);
-		cell.get(""+4+3).setValue(1, true, 1);
-		cell.get(""+4+4).setValue(4, true, 1);
-		cell.get(""+4+6).setValue(5, true, 1);
-		cell.get(""+4+7).setValue(7, true, 1);
-		cell.get(""+4+9).setValue(8, true, 1);
-		cell.get(""+6+1).setValue(7, true, 1);
-		cell.get(""+6+3).setValue(5, true, 1);
-		cell.get(""+6+5).setValue(9, true, 1);
-		cell.get(""+6+6).setValue(6, true, 1);
-		cell.get(""+6+7).setValue(2, true, 1);
-		cell.get(""+7+3).setValue(8, true, 1);
-		cell.get(""+7+6).setValue(1, true, 1);
-		cell.get(""+8+1).setValue(9, true, 1);
-		cell.get(""+8+3).setValue(2, true, 1);
-		cell.get(""+8+4).setValue(2, true, 1);
-		cell.get(""+8+9).setValue(6, true, 1);
-		cell.get(""+9+3).setValue(4, true, 1);
-		cell.get(""+9+5).setValue(2, true, 1);
-		cell.get(""+9+9).setValue(3, true, 1);
+		cell.get(""+1+1).setCellValue(3, true, 1);
+		//System.out.println(" str -> " + cell.get(""+1+1).getName() + " value = " + cell.get(""+1+1).getValue());
+		cell.get(""+1+5).setCellValue(5, true, 1);
+		cell.get(""+1+7).setCellValue(9, true, 1);
+		cell.get(""+2+1).setCellValue(2, true, 1);
+		cell.get(""+2+6).setCellValue(8, true, 1);
+		cell.get(""+2+7).setCellValue(4, true, 1);
+		cell.get(""+2+9).setCellValue(5, true, 1);
+		cell.get(""+3+4).setCellValue(2, true, 1);
+		cell.get(""+3+7).setCellValue(3, true, 1);
+		cell.get(""+4+3).setCellValue(1, true, 1);
+		cell.get(""+4+4).setCellValue(4, true, 1);
+		cell.get(""+4+6).setCellValue(5, true, 1);
+		cell.get(""+4+7).setCellValue(7, true, 1);
+		cell.get(""+4+9).setCellValue(8, true, 1);
+		cell.get(""+6+1).setCellValue(7, true, 1);
+		cell.get(""+6+3).setCellValue(5, true, 1);
+		cell.get(""+6+5).setCellValue(9, true, 1);
+		cell.get(""+6+6).setCellValue(6, true, 1);
+		cell.get(""+6+7).setCellValue(2, true, 1);
+		cell.get(""+7+3).setCellValue(8, true, 1);
+		cell.get(""+7+6).setCellValue(1, true, 1);
+		cell.get(""+8+1).setCellValue(9, true, 1);
+		cell.get(""+8+3).setCellValue(2, true, 1);
+		cell.get(""+8+4).setCellValue(2, true, 1);
+		cell.get(""+8+9).setCellValue(6, true, 1);
+		cell.get(""+9+3).setCellValue(4, true, 1);
+		cell.get(""+9+5).setCellValue(2, true, 1);
+		cell.get(""+9+9).setCellValue(3, true, 1);
 	}
 		
 }
