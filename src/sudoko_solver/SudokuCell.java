@@ -1,6 +1,7 @@
 package sudoko_solver;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class SudokuCell {
 	
@@ -11,6 +12,10 @@ public class SudokuCell {
 	private boolean[] possibleCellNumbers = {true,false,false,false,false,false,false,false,false,false};
 	private int row = 0;
 	private int col = 0;
+	private String[] myROW = new String[11];
+	private String[] myCOL = new String[11];
+	private String[] myBLOCK = new String[11];
+	
 	
 	
 	public SudokuCell(int initRow, int initCol, int initValue, boolean initIsSolved, int initIsSolvedBy) {
@@ -30,10 +35,7 @@ public class SudokuCell {
 			cellName = "" + initRow + initCol;
 			row = initRow;
 			col = initCol;		
-			System.out.println("row = " + initRow + " col = " + initCol + " name = " + cellName);
-			
-			//setCoordinate( initRow, initCol);
-			//setValue ( initValue, initIsSolved, initIsSolvedBy);
+			//System.out.println("row = " + initRow + " col = " + initCol + " name = " + cellName);
 			value = initValue;
 			isSolved = initIsSolved;
 			isSolvedBy = initIsSolvedBy;
@@ -53,6 +55,9 @@ public class SudokuCell {
 		value = Value;
 		isSolved = IsSolved;
 		isSolvedBy = IsSolvedBy;
+	}
+	public boolean getIsSolved() {
+		return isSolved;
 	}
 	public int getCellValue(){
 		//System.out.println("row = " + row + " col = " + col + " Value = " + String.valueOf(value));
@@ -96,9 +101,32 @@ public class SudokuCell {
 					returnstring = returnstring + "<tr>";
 				}
 			}
-	
 		}
 		returnstring = returnstring + "</table>";
 		return returnstring;
+	}
+	public void setMyROW( String[] ROW){
+		for (int i = 1; i< ROW.length; i++) {
+			myROW[i] = ROW[i];
+		}
+	}
+	public void setMyCOL( String[] COL){
+		for (int i = 1; i< COL.length; i++) {
+			myCOL[i] = COL[i];
+		}
+	}
+	public void setMyBLOCK( String[] BLOCK){
+		for (int i = 1; i< BLOCK.length; i++) {
+			myBLOCK[i] = BLOCK[i];
+		}
+	}
+	public String[] getMyROW() { 
+		return Arrays.copyOf(myROW, myROW.length);
+	}
+	public String[] getMyCOL() { 
+		return Arrays.copyOf(myCOL, myCOL.length);
+	}
+	public String[] getMyBLOCK() { 
+		return Arrays.copyOf(myBLOCK, myBLOCK.length);
 	}
 }

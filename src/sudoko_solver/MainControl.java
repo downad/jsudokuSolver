@@ -2,6 +2,18 @@ package sudoko_solver;
 
 public class MainControl {
 	
+	/* ShowInrhsPane 
+		1 = btnAllValue = new JButton("Alle Möglichkeiten");
+		2 = btnClear = new JButton("Lösche die Hilfen"); 
+		3 = btnNotOnlyAllowedNumber = new JButton("Alle Zahlen die Nicht erlaubt sind");
+	*/
+	public static String SudokuHilfen( int ShowInrhsPane){
+		String returnString = "";
+		if (ShowInrhsPane == 1) { returnString = SudokuHilfeClear();}
+		if (ShowInrhsPane == 2) { returnString = SudokuHilfeValue();}
+		if (ShowInrhsPane == 3) { returnString = SudokuHilfeNotAllowedNumbers();}
+		return returnString;
+	}
 	public static String SudokuHilfeValue(){
 		String SudokuHilfe = "<table Border=1 >";
 		for (int row = 1; row<= jsudokuSolver.MAXROW; row++) {

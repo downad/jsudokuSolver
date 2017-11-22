@@ -46,21 +46,19 @@ public class MainGUI extends JFrame {
 	private static int BottomPaneWidth = 1150;
 	private static int BottomPaneHeight = 100;
 	
+	/* ShowInrhsPane 
+	 	1 = btnClear = new JButton("Lösche die Hilfen"); 
+		2 = btnAllValue = new JButton("Alle Möglichkeiten");
+		3 = btnNotOnlyAllowedNumber = new JButton("Alle Zahlen die Nicht erlaubt sind");
+	*/
+	private static int ShowInrhsPane = 1;
+	
 	// buttons
-	JButton btn1 = new JButton("Random Button");
+	JButton ClearAllowedNumber = new JButton("Finde erlaubte Zahlen je Zelle");
 	JButton btnAllValue = new JButton("Alle Möglichkeiten");
 	JButton btnClear = new JButton("Lösche die Hilfen");
 	JButton btnNotOnlyAllowedNumber = new JButton("Alle Zahlen die Nicht erlaubt sind");
 
-	
-	// Value
-	/*
-	private static String SudokuHilfe = "<table Border=1>" +
-            "<tr><td> Feld 11</td><td> Feld 12</td><td> Feld 13</td></tr>" +
-            "<tr><td> Feld 21</td><td> Feld 22</td><td> Feld 23</td></tr>" +
-            "<tr><td> Feld 31</td><td> Feld 32</td><td> Feld 33</td></tr>" +
-            "</table>";
-*/
     public MainGUI() {
    	
         JFrame frame = new JFrame(WindowTitle);
@@ -112,7 +110,13 @@ public class MainGUI extends JFrame {
         top.setPreferredSize(new Dimension(TopPaneWidth,TopPaneHeight));
         top.setAlignmentX(Component.CENTER_ALIGNMENT);
         top.setBorder(BorderFactory.createTitledBorder(TopTitle));
-        top.add(btn1);
+        top.add(ClearAllowedNumber);
+        ClearAllowedNumber.addActionListener( new ActionListener() {
+			  @Override public void actionPerformed( ActionEvent e ) {
+				  Strategie.ClearAllowedNumber();
+				  rhsPane.setText(MainControl.SudokuHilfen(ShowInrhsPane));
+			  }
+		} );
 //    	End Sudoku-Lösungs-Strategien (NORTH)
 
 //    	Ausgabefilter (SOUTH)
@@ -120,24 +124,31 @@ public class MainGUI extends JFrame {
         bottom.setPreferredSize(new Dimension(BottomPaneWidth,BottomPaneHeight));
 		bottom.setAlignmentX(Component.CENTER_ALIGNMENT);
 		bottom.setBorder(BorderFactory.createTitledBorder(BottomTitle));
+		bottom.add(btnClear);
+		btnClear.addActionListener( new ActionListener() {
+			@Override public void actionPerformed( ActionEvent e ) {
+				ShowInrhsPane = 1;
+				rhsPane.setText(MainControl.SudokuHilfen(ShowInrhsPane));
+			    //rhsPane.setText(MainControl.SudokuHilfeClear());
+			  }
+		} );
 		bottom.add(btnAllValue);
 		btnAllValue.addActionListener( new ActionListener() {
-			  @Override public void actionPerformed( ActionEvent e ) {
-			    rhsPane.setText(MainControl.SudokuHilfeValue());
+			@Override public void actionPerformed( ActionEvent e ) {
+				ShowInrhsPane = 2;
+				rhsPane.setText(MainControl.SudokuHilfen(ShowInrhsPane));
+			    //rhsPane.setText(MainControl.SudokuHilfeValue());
 			  }
 		} );
 		bottom.add(btnNotOnlyAllowedNumber);
 		btnNotOnlyAllowedNumber.addActionListener( new ActionListener() {
-			  @Override public void actionPerformed( ActionEvent e ) {
-			    rhsPane.setText(MainControl.SudokuHilfeNotAllowedNumbers());
+			@Override public void actionPerformed( ActionEvent e ) {
+				ShowInrhsPane = 3;
+				rhsPane.setText(MainControl.SudokuHilfen(ShowInrhsPane));
+			    //rhsPane.setText(MainControl.SudokuHilfeNotAllowedNumbers());
 			  }
 		} );
-		bottom.add(btnClear);
-		btnClear.addActionListener( new ActionListener() {
-			  @Override public void actionPerformed( ActionEvent e ) {
-			    rhsPane.setText(MainControl.SudokuHilfeClear());
-			  }
-		} );
+
 //    	End Ausgabefilter (SOUTH) 
     
 // bastle das alles zusammen
