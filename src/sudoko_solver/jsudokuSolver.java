@@ -33,19 +33,20 @@ public class jsudokuSolver {
 	public final static int MAXCOL = 9;
 	
 	public static Map<String, SudokuCell> cell = new HashMap<String, SudokuCell>();
-	public static String[][] ROW = new String[11][11];
-	public static String[][] COL = new String[11][11];
-	//public static String[] BLOCK = new String[11];
+	public static String[][] ROW = new String[(MAXROW+1)][(MAXCOL+1)];
+	public static String[][] COL = new String[(MAXROW+1)][(MAXCOL+1)];
+	//public static String[][] BLOCK = new String[(MAXROW+1)][(MAXCOL+1)];
+	
 	public static String[][] BLOCK = { {},
-			{"", "11", "12", "13", "21", "22", "23", "31", "32", "33"}, 
-			{"","14", "15", "16", "24", "25", "26", "34", "35", "36"}, // 2
-			{"","17", "18", "19", "27", "28", "29", "37", "38", "39"}, // 3
-			{"","41", "42", "43", "51", "52", "53", "61", "62", "63"}, // 4
-			{"","44", "45", "46", "54", "55", "56", "64", "65", "66"}, // 5
-			{"","47", "48", "49", "57", "58", "59", "67", "68", "69"}, // 6
-			{"","71", "72", "73", "81", "82", "83", "91", "92", "93"}, // 7
-			{"","74", "75", "76", "84", "85", "86", "94", "95", "96"}, // 8
-			{"","77", "78", "79", "87", "88", "89", "97", "98", "99"}, // 9
+			{"", "11", "12", "13", "21", "22", "23", "31", "32", "33"}, // 1
+			{"", "14", "15", "16", "24", "25", "26", "34", "35", "36"}, // 2
+			{"", "17", "18", "19", "27", "28", "29", "37", "38", "39"}, // 3
+			{"", "41", "42", "43", "51", "52", "53", "61", "62", "63"}, // 4
+			{"", "44", "45", "46", "54", "55", "56", "64", "65", "66"}, // 5
+			{"", "47", "48", "49", "57", "58", "59", "67", "68", "69"}, // 6
+			{"", "71", "72", "73", "81", "82", "83", "91", "92", "93"}, // 7
+			{"", "74", "75", "76", "84", "85", "86", "94", "95", "96"}, // 8
+			{"", "77", "78", "79", "87", "88", "89", "97", "98", "99"}, // 9
 	};
 
 	
@@ -56,7 +57,6 @@ public class jsudokuSolver {
 		int col = 1;
 		for (int row = 1; row<= MAXROW; row++) {
 			for (col = 1; col<= MAXCOL; col++) {
-				int blockCol = (col-1) / BLOCKCOL;
 				COL[col][row] = "" + row + col;
 				ROW[row][col] = "" + row + col;
 				// SudokuCell(int initRow, int initCol, int initValue, boolean initIsSolved, int initIsSolvedBy)

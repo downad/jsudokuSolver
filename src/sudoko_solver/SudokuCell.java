@@ -9,7 +9,8 @@ public class SudokuCell {
 	private int value = 0;
 	private boolean isSolved = false;
 	private int isSolvedBy = 0;
-	private boolean[] possibleCellNumbers = {true,false,false,false,false,false,false,false,false,false};
+	private boolean[] possibleValues = {true,true,true,true,true,true,true,true,true,true};
+	private boolean[] notPossibleValues = {true,false,false,false,false,false,false,false,false,false};
 	private int row = 0;
 	private int col = 0;
 	private String[] myROW = new String[11];
@@ -68,15 +69,16 @@ public class SudokuCell {
 		return cellName;
 	}
 	public void setPossibleCellNumber(int Value) {
-		possibleCellNumbers[Value] = true;
+		possibleValues[Value] = true;
 	}
 	public void clearPossibleCellNumber(int Value) {
-		possibleCellNumbers[Value] = false;
+		possibleValues[Value] = false;
+		System.out.println("clearPossibleCellNumber: " + "lösche die Nummer " + Value);
 	}
 	public ArrayList<Integer> getPossibleCellNumber() {
 		ArrayList<Integer> returnint = new ArrayList<Integer>();
 		for (int i = 1; i<= jsudokuSolver.MAXNUMBER; i++){
-			if (possibleCellNumbers[i] = true) {
+			if (possibleValues[i] == true) {
 				returnint.add(i);
 			}
 		}
@@ -89,7 +91,7 @@ public class SudokuCell {
 			return "<table style=\"font-size:1.2em\" border=0><tr><td>" + value + "</td></tr></table>";}
 		
 		for (int i = 1; i<= jsudokuSolver.MAXNUMBER; i++){
-			if (possibleCellNumbers[i] = true ) {
+			if (possibleValues[i] == true ) {
 				tdValue = String.valueOf(i);
 			} else {
 				tdValue = " ";
@@ -128,5 +130,9 @@ public class SudokuCell {
 	}
 	public String[] getMyBLOCK() { 
 		return Arrays.copyOf(myBLOCK, myBLOCK.length);
+	}
+	public void setNotPossibleValue(int Number){
+		notPossibleValues[Number] = true;
+		clearPossibleCellNumber(Number);
 	}
 }

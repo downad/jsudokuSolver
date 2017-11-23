@@ -113,7 +113,7 @@ public class MainGUI extends JFrame {
         top.add(ClearAllowedNumber);
         ClearAllowedNumber.addActionListener( new ActionListener() {
 			  @Override public void actionPerformed( ActionEvent e ) {
-				  Strategie.ClearAllowedNumber();
+				  Strategie.FindValueAndClearAllowedNumber();
 				  rhsPane.setText(MainControl.SudokuHilfen(ShowInrhsPane));
 			  }
 		} );
