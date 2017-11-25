@@ -9,7 +9,7 @@ public class SudokuCell {
 	private int value = 0;
 	private boolean isSolved = false;
 	private int isSolvedBy = 0;
-	private boolean[] possibleValues = {true,true,true,true,true,true,true,true,true,true};
+	private boolean[] Candidates = {true,true,true,true,true,true,true,true,true,true};
 	private boolean[] notPossibleValues = {true,false,false,false,false,false,false,false,false,false};
 	private int row = 0;
 	private int col = 0;
@@ -68,30 +68,30 @@ public class SudokuCell {
 	public String getName(){
 		return cellName;
 	}
-	public void setPossibleCellNumber(int Value) {
-		possibleValues[Value] = true;
+	public void setCandidate(int Value) {
+		Candidates[Value] = true;
 	}
-	public void clearPossibleCellNumber(int Value) {
-		possibleValues[Value] = false;
+	public void clearCandidate(int Value) {
+		Candidates[Value] = false;
 		System.out.println("clearPossibleCellNumber: " + "lösche die Nummer " + Value);
 	}
-	public ArrayList<Integer> getPossibleCellNumber() {
+	public ArrayList<Integer> getCandidates() {
 		ArrayList<Integer> returnint = new ArrayList<Integer>();
 		for (int i = 1; i<= jsudokuSolver.MAXNUMBER; i++){
-			if (possibleValues[i] == true) {
+			if (Candidates[i] == true) {
 				returnint.add(i);
 			}
 		}
 		return returnint;
 	}
-	public String getPosibleCellNumberAsStringTable(){
+	public String getCandidatesAsStringTable(){
 		String returnstring = "<table style=\"font-size:9px\" border=0><tr>";
 		String tdValue = "";
 		if (isSolved == true) {
 			return "<table style=\"font-size:1.2em\" border=0><tr><td>" + value + "</td></tr></table>";}
 		
 		for (int i = 1; i<= jsudokuSolver.MAXNUMBER; i++){
-			if (possibleValues[i] == true ) {
+			if (Candidates[i] == true ) {
 				tdValue = String.valueOf(i);
 			} else {
 				tdValue = " ";
@@ -133,6 +133,6 @@ public class SudokuCell {
 	}
 	public void setNotPossibleValue(int Number){
 		notPossibleValues[Number] = true;
-		clearPossibleCellNumber(Number);
+		clearCandidate(Number);
 	}
 }
