@@ -20,7 +20,7 @@ public class SudokuDaten {
 	    		ValueDouble[0] = ""+row+col;
 	    		ValueDouble[1] = ""+tokens[i];
 	    		b.add(ValueDouble.clone());
-	    		System.out.println("i: " + i + " Zelle [" + row+ "/"+col +"] " + " Tokens: " + tokens[i]);
+	    		//System.out.println("SudokuDaten - i: " + i + " Zelle [" + row+ "/"+col +"] " + " Tokens: " + tokens[i]);
 	    	}
 		}
 		return b;

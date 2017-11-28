@@ -50,7 +50,7 @@ public class SudokuCell {
 		cellName = str.toString();
 		row = initRow;
 		col = initCol;		
-		System.out.println("row = " + initRow + " col = " + initCol + " name = " + cellName);
+		//System.out.println("SudokuCell: setCoordinate - row = " + initRow + " col = " + initCol + " name = " + cellName);
 	}
 	public void setCellValue ( int Value, boolean IsSolved, int IsSolvedBy) {
 		value = Value;
@@ -73,7 +73,7 @@ public class SudokuCell {
 	}
 	public void clearCandidate(int Value) {
 		Candidates[Value] = false;
-		System.out.println("clearPossibleCellNumber: " + "lösche die Nummer " + Value);
+		//System.out.println("SudokuCell: clearPossibleCellNumber: " + "lösche die Nummer " + Value);
 	}
 	public ArrayList<Integer> getCandidates() {
 		ArrayList<Integer> returnint = new ArrayList<Integer>();

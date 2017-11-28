@@ -38,11 +38,11 @@ public class MainControl {
 	public String SudokuHilfen( int ShowInrhsPane){
 		String returnString = "";
 		if (ShowInrhsPane == 1) { returnString = SudokuHilfeClear();}
-		if (ShowInrhsPane == 2) { returnString = SudokuHilfeValue();}
+		if (ShowInrhsPane == 2) { returnString = showCandidates();}
 		if (ShowInrhsPane == 3) { returnString = SudokuHilfeNotAllowedNumbers();}
 		return returnString;
 	}
-	public String SudokuHilfeValue(){
+	public String showCandidates(){
 		String SudokuHilfe = "<table Border=1 >";
 		for (int row = 1; row<= jsudokuSolver.MAXROW; row++) {
 			SudokuHilfe = SudokuHilfe + "<tr>";
@@ -169,37 +169,7 @@ public class MainControl {
 			System.out.println("Coordinate: " + SudokuGame.get(i)[0] + " Value " + SudokuGame.get(i)[1]);
 			cell.get(SudokuGame.get(i)[0]).setCellValue(Integer.parseInt(SudokuGame.get(i)[1]), true, 1);
 		}
-		/*
-		cell.get(""+1+1).setCellValue(3, true, 1);
-		//System.out.println(" str -> " + cell.get(""+1+1).getName() + " value = " + cell.get(""+1+1).getValue());
-		cell.get(""+1+5).setCellValue(5, true, 1);
-		cell.get(""+1+7).setCellValue(9, true, 1);
-		cell.get(""+2+1).setCellValue(2, true, 1);
-		cell.get(""+2+6).setCellValue(8, true, 1);
-		cell.get(""+2+7).setCellValue(4, true, 1);
-		cell.get(""+2+9).setCellValue(5, true, 1);
-		cell.get(""+3+4).setCellValue(2, true, 1);
-		cell.get(""+3+7).setCellValue(3, true, 1);
-		cell.get(""+4+3).setCellValue(1, true, 1);
-		cell.get(""+4+4).setCellValue(4, true, 1);
-		cell.get(""+4+6).setCellValue(5, true, 1);
-		cell.get(""+4+7).setCellValue(7, true, 1);
-		cell.get(""+4+9).setCellValue(8, true, 1);
-		cell.get(""+6+1).setCellValue(7, true, 1);
-		cell.get(""+6+3).setCellValue(5, true, 1);
-		cell.get(""+6+5).setCellValue(9, true, 1);
-		cell.get(""+6+6).setCellValue(6, true, 1);
-		cell.get(""+6+7).setCellValue(2, true, 1);
-		cell.get(""+7+3).setCellValue(8, true, 1);
-		cell.get(""+7+6).setCellValue(1, true, 1);
-		cell.get(""+8+1).setCellValue(9, true, 1);
-		cell.get(""+8+3).setCellValue(2, true, 1);
-		cell.get(""+8+4).setCellValue(2, true, 1);
-		cell.get(""+8+9).setCellValue(6, true, 1);
-		cell.get(""+9+3).setCellValue(4, true, 1);
-		cell.get(""+9+5).setCellValue(2, true, 1);
-		cell.get(""+9+9).setCellValue(3, true, 1);
-		*/
+
 	}
 	private boolean testValueInUnit(String Unit, String Coordinate, int Value){
 		boolean allIsOK = true;

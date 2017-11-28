@@ -34,8 +34,20 @@ public class jsudokuSolver {
 	public final static int MAXROW = 9;
 	public final static int MAXCOL = 9;
 
-	
-	public static void main(String[] args){		
+	static SudokuController controller;
+
+    /**
+     * Diese Klasse wird nur dazu benutzt alle nötigen
+     * Komponenten zu Initialisieren und die erste
+     * View anzuzeigen
+     */
+    public static void main(String [] args){
+        controller = new SudokuController();
+
+        controller.showView();
+    }
+//	public static void main(String[] args){	
+		
 
 /*
 		// Sudoku inititalisieren 
@@ -43,15 +55,26 @@ public class jsudokuSolver {
 		Sudoku.StartSudoku();
 		// Sudoku laden
 */		
+		/*
 		ArrayList<String[]> SudokuGame = SudokuDaten.myGame();
 		for (int i = 1; i <SudokuGame.size(); i++) {
 			//String[] a = SudokuGame[i];
 			System.out.println("Coordinate: " + SudokuGame.get(i)[0] + " Value " + SudokuGame.get(i)[1]);
 		}
+		
+		MainControl Sudoku = new MainControl();
+		SudokuGUI gui = new SudokuGUI();
+		Sudoku.StartSudoku();
+		String a = Sudoku.showCandidates();
+		gui.setrhs(a);
+		//
 		//GUI Starten		
-		MainGUI gui = new MainGUI();
+		//MainGUI gui = new MainGUI();
 		//SimpleFTF.main();
-	}
+		 * 
+		 */
+		
+//	}
 	
 
 		

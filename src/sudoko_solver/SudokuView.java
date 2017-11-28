@@ -1,28 +1,30 @@
 package sudoko_solver;
 
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
 
-import javax.swing.*;
-import javax.swing.text.DefaultFormatterFactory;
-import javax.swing.text.MaskFormatter;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JFormattedTextField;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.JTextPane;
 import javax.swing.text.NumberFormatter;
 
+public class SudokuView  extends JFrame {
 
-public class MainGUI extends JFrame {
-
-    /**
-	 * 
-	 */
-	private static final long serialVersionUID = 2275551785684792559L;
-	
 	// Titel der Fensters
 	private static String WindowTitle = "Sudoku - My Sudoku-Solver mit Java";
 	
@@ -47,6 +49,7 @@ public class MainGUI extends JFrame {
 	private static int SudokuGridHeight = 750;
 	
 	private static String RightTitle = "Sudoku Hilfen";
+	private JPanel rhs = new JPanel();
 	private JTextPane rhsPane = new JTextPane(); // Text auf der Sudoku Hilfeseite
 	private static int rhsWidth = 580;
 	private static int rhsHeight = 770;
@@ -67,35 +70,30 @@ public class MainGUI extends JFrame {
 	private static int ShowInrhsPane = 1;
 	
 	// buttons
-	JButton ClearAllowedNumber = new JButton("find Candidates");
-	JButton FindNakedSingle = new JButton("NakedSingle");
+	JButton createCandidatesInCell = new JButton("find Candidates");
+	JButton findNakedSingle = new JButton("NakedSingle");
+	JButton refresh = new JButton("refresh rhs");
+	
 	
 	JButton btnAllValue = new JButton("Alle Möglichkeiten");
-	JButton btnClear = new JButton("Lösche die Hilfen");
+	JButton btnClearrhsPane = new JButton("Lösche die Hilfen");
 	JButton btnNotOnlyAllowedNumber = new JButton("Alle Zahlen die Nicht erlaubt sind");
 	
+	
 	// allgemeine Variablen
-	private int FoundWithMethod = 0;
-	private JFormattedTextField SudokuInputField[]= new JFormattedTextField[(jsudokuSolver.MAXROW * jsudokuSolver.MAXCOL) + 2];
+	private JFormattedTextField SudokuInputField[]= new JFormattedTextField[(jsudokuSolver.MAXROW * jsudokuSolver.MAXCOL) + 1];
 		
 	private Font givenFont = new Font("SansSerif", Font.BOLD, 20);
 	private Font font1 = new Font("SansSerif", Font.BOLD, 20);
+	private String[] SudokuInputFieldValue = new String[(jsudokuSolver.MAXROW * jsudokuSolver.MAXCOL) + 1];
 	
-	// Sudoku inititalisieren 
-	private MainControl Sudoku = new MainControl();
-			
-	private int newEvent =1; //neues Event
-	private PropertyChangeListener myEventListener = new FormattedTextFieldListener();
-	private PropertyChangeSupport changes = new PropertyChangeSupport( this );
 
-
-
-    public MainGUI()  {
-    	
-    	// Sudoku laden
-    	Sudoku.StartSudoku();
+    public SudokuView()  {
     	initSudokuInputField();
-   	
+    	init();
+    }
+    private void init() {
+    	   	
         JFrame frame = new JFrame(WindowTitle);
         frame.setLayout(new BorderLayout());
         frame.setResizable(false);
@@ -107,28 +105,27 @@ public class MainGUI extends JFrame {
 //      Sudokofeld (WEST)
 //        JPanel lhs = new JPanel();
         lhs.setPreferredSize(new Dimension(lhsWidth,lhsHeight));
+        lhs.setBorder(BorderFactory.createTitledBorder(LeftTitle));
         SudokuGrid.setPreferredSize(new Dimension(SudokuGridWidth,SudokuGridHeight));
         SudokuGrid.setLayout(new GridBagLayout());
-        CreateSudokuGrid();
-        //SudokuGrid.add(new Zeichnung());
+        
+        //SudokuGrid.add(getSudokuInputGrid());
+        getSudokuInputGrid();
         lhs.add(SudokuGrid);
-        //lhs.add(new Zeichnung());
-        lhs.setBorder(BorderFactory.createTitledBorder(LeftTitle));
 //      End Sudokofeld (WEST)
 
-
-//      Sudoku Hilfen (EAST)
-        JPanel rhs = new JPanel();
-        rhs.setPreferredSize(new Dimension(rhsWidth,rhsHeight));
-        //JTextPane rhsPane = new JTextPane();
-        rhsPane.setPreferredSize(new Dimension(rhsPaneWidth,rhsPaneHeight));//setSize(400,300);
         
+//      Sudoku Hilfen (EAST)
+        rhs.setPreferredSize(new Dimension(rhsWidth,rhsHeight));
+        rhs.setBorder(BorderFactory.createTitledBorder(RightTitle));        
+        rhsPane.setPreferredSize(new Dimension(rhsPaneWidth,rhsPaneHeight));//setSize(400,300);
         rhsPane.setContentType("text/html");
         //String rhsPaneText = MainControl.SudokuHilfeClear();
-        rhsPane.setText(Sudoku.SudokuHilfeClear()); //rhsPaneText);
+        //rhsPane.setText(Sudoku.SudokuHilfeClear()); //rhsPaneText);
+        rhsPane.setText("rechts"); //rhsPaneText);
+        
         rhsPane.setEditable(false);
         rhs.add(rhsPane);
-        rhs.setBorder(BorderFactory.createTitledBorder(RightTitle));        
 //      End Sudoku-Hilfen (EAST)
         
         
@@ -143,20 +140,9 @@ public class MainGUI extends JFrame {
         top.setPreferredSize(new Dimension(TopPaneWidth,TopPaneHeight));
         top.setAlignmentX(Component.CENTER_ALIGNMENT);
         top.setBorder(BorderFactory.createTitledBorder(TopTitle));
-        top.add(ClearAllowedNumber);
-        ClearAllowedNumber.addActionListener( new ActionListener() {
-			  @Override public void actionPerformed( ActionEvent e ) {
-				  Sudoku.createListOfAllowedNumberInAllSudokuCells();
-				  rhsPane.setText(Sudoku.SudokuHilfen(ShowInrhsPane));
-			  }
-		} );
-        top.add(FindNakedSingle);
-        FindNakedSingle.addActionListener( new ActionListener() {
-			  @Override public void actionPerformed( ActionEvent e ) {
-				  FoundWithMethod = Sudoku.findNakedSingle();
-				  rhsPane.setText(Sudoku.SudokuHilfen(ShowInrhsPane));
-			  }
-		} );
+        //top.add(createCandidatesInCell);
+        top.add(findNakedSingle);
+        top.add(refresh);
 //    	End Sudoku-Lösungs-Strategien (NORTH)
 
 //    	Ausgabefilter (SOUTH)
@@ -164,31 +150,12 @@ public class MainGUI extends JFrame {
         bottom.setPreferredSize(new Dimension(BottomPaneWidth,BottomPaneHeight));
 		bottom.setAlignmentX(Component.CENTER_ALIGNMENT);
 		bottom.setBorder(BorderFactory.createTitledBorder(BottomTitle));
-		bottom.add(btnClear);
-		btnClear.addActionListener( new ActionListener() {
-			@Override public void actionPerformed( ActionEvent e ) {
-				ShowInrhsPane = 1;
-				rhsPane.setText(Sudoku.SudokuHilfen(ShowInrhsPane));
-				setField(11,7);
-			    //rhsPane.setText(MainControl.SudokuHilfeClear());
-			  }
-		} );
-		bottom.add(btnAllValue);
-		btnAllValue.addActionListener( new ActionListener() {
-			@Override public void actionPerformed( ActionEvent e ) {
-				ShowInrhsPane = 2;
-				rhsPane.setText(Sudoku.SudokuHilfen(ShowInrhsPane));
-			    //rhsPane.setText(MainControl.SudokuHilfeValue());
-			  }
-		} );
-		bottom.add(btnNotOnlyAllowedNumber);
-		btnNotOnlyAllowedNumber.addActionListener( new ActionListener() {
-			@Override public void actionPerformed( ActionEvent e ) {
-				ShowInrhsPane = 3;
-				rhsPane.setText(Sudoku.SudokuHilfen(ShowInrhsPane));
-			    //rhsPane.setText(MainControl.SudokuHilfeNotAllowedNumbers());
-			  }
-		} );
+		bottom.add(createCandidatesInCell);
+		bottom.add(btnClearrhsPane);
+
+		//bottom.add(btnAllValue);
+		//bottom.add(btnNotOnlyAllowedNumber);
+
 
 //    	End Ausgabefilter (SOUTH) 
     
@@ -206,7 +173,6 @@ public class MainGUI extends JFrame {
         frame.setVisible(true);
 
     }
-    
     private void initSudokuInputField() {
         //NumberFormatter nf = new NumberFormatter();
     	NumberFormatter nf = new NumberFormatter() {
@@ -237,86 +203,26 @@ public class MainGUI extends JFrame {
     		//SudokuInputField[i].setColumns(2);
     		SudokuInputField[i].setName("" + i);
     		//SudokuInputField[i].setText(SudokuInputField[i].getName()); //setText(Sudoku.getCellValueAsStringByNumber(i));
-    		SudokuInputField[i].setText(Sudoku.getCellValueAsStringByNumber(i));
-
+    		//SudokuInputField[i].setText(SudokuInputFieldValue[i]); //Sudoku.getCellValueAsStringByNumber(i));
+    		
+    		System.out.println("View: initSudokuInputField - SudokuInputFieldValue [" + i +"] = " + SudokuInputFieldValue[i]);
     		SudokuInputField[i].setPreferredSize(new Dimension(FieldWidth,FieldHeight));
     		SudokuInputField[i].setMaximumSize(new Dimension(FieldWidth,FieldHeight));
     		SudokuInputField[i].setMinimumSize(new Dimension(FieldWidth,FieldHeight));
-    		
+    		/*
     		if (Sudoku.isCellSolvedByNumber(i) == true) {
     			SudokuInputField[i].setEditable(false);
     		} else {
     			SudokuInputField[i].setText("-");
     		}
-    		
+    		*/
     		// Eventlistener
     		SudokuInputField[i].addPropertyChangeListener("value", new FormattedTextFieldListener());
-    		/*
-    		SudokuInputField[i].addPropertyChangeListener(new PropertyChangeListener() {
-            	@Override public void propertyChange(PropertyChangeEvent e) {
-            		Object source = e.getSource();
-            		//System.out.println(" Die Quelle " + source + " hat das Event ausgelöst" );
-            		//System.out.println(" - Events.getPropertyName " + e.getPropertyName());
-            		//System.out.println(" - Events.toString " + e.toString());
-            		//System.out.println(" - Events.getOldValue " + e.getOldValue());
-            		//System.out.println(" - Events.getNewValue " + e.getNewValue());
-            		//System.out.println(" - Events.getSource " + e.getSource());
-            		//System.out.println(" - Events.getClass " + e.getClass());
-            		//System.out.println(" - Events.getPropagationId " + e.getPropagationId());
-            		
-            		if (e.getPropertyName() == "value" ) {
-            			//System.out.println(" Die Quelle " + source + " hat das Event ausgelöst" );
-            			//System.out.println(" - Events.getPropertyName " + e.getPropertyName());
-            			for (int i = 1; i <(jsudokuSolver.MAXROW * jsudokuSolver.MAXCOL) + 1 ; i++ ) {
-                			if (source == SudokuInputField[i]) {
-                				System.out.println("InputField: " + i + " wurde geändert"); 
-                				int GridCellNumber = i;
-                				// 	IsSolvedBy	2 = manuelle Eingabe
-                				int IsSolvedBy = 2;
-                				Object Value = SudokuInputField[GridCellNumber].getValue();
-                				if (Value !=null ) {
-                					System.out.println("InputField: " + i + " hat den Wert: " + Value.toString()); 
-                					if (Sudoku.testAndSetValue(GridCellNumber,Value.toString(), IsSolvedBy) == true){
-                    					//SudokuInputField[GridCellNumber].setText(Sudoku.getCellValueAsStringByNumber(GridCellNumber));
-                    					SudokuInputField[GridCellNumber].setEditable(false);
-                    					System.out.println("SudokuInputField[i].addPropertyChangeListener - ");
-                    					System.out.println("    setze " + Value + " in das Feld mit der Nummer  " + GridCellNumber);
-                    					
-                    				} else if (SudokuInputField[GridCellNumber].isEditable()){
-                    					SudokuInputField[GridCellNumber].setValue( e.getOldValue());
-                    					//SudokuInputField[GridCellNumber].setValue(0);
-                    					//SudokuInputField[GridCellNumber].setEditable(true);
-                    					System.out.println("SudokuInputField[i].addPropertyChangeListener - ");
-                    					System.out.println("    dieser Value " + Value + " passt nicht in das Feld mit der Nummer " + GridCellNumber);
-                    				}
-                				}
-                			}
-            			}
-            		}
-            	}            	
-    		});
-    	*/
     	}
-    	
     }
- 
-    private void testAndSetValue(int GridCellNumber, String Value, int IsSolvedBy ){
-    	if (Sudoku.testAndSetValue(GridCellNumber,Value.toString(), IsSolvedBy) == true){
-			SudokuInputField[GridCellNumber].setText(Sudoku.getCellValueAsStringByNumber(GridCellNumber));
-			SudokuInputField[GridCellNumber].setEditable(false);
-			System.out.println("SudokuInputField[i].addPropertyChangeListener - ");
-			System.out.println("    setze " + Value + " in das Feld mit der Nummer  " + GridCellNumber);
-		} else {
-			SudokuInputField[GridCellNumber].setText("0");
-			//SudokuInputField[GridCellNumber].setValue(0);
-			SudokuInputField[GridCellNumber].setEditable(true);
-			System.out.println("SudokuInputField[i].addPropertyChangeListener - ");
-			System.out.println("    dieser Value " + Value + " passt nicht in das Feld mit der Nummer " + GridCellNumber);
-		}
-    	
-    }
-    private void CreateSudokuGrid(){
+    private void getSudokuInputGrid(){
         GridBagConstraints gbc = new GridBagConstraints();
+        //JPanel returnJPanel = new JPanel();
 		gbc.weightx = 1.0;
 		gbc.weighty = 1.0;
 
@@ -352,16 +258,37 @@ public class MainGUI extends JFrame {
             			//SudokuInputField[GridCount].setText("5");
             		}
         		}
-        		
         		SudokuGrid.add(SudokuInputField[GridCount], gbc);
+        		//returnJPanel.add(SudokuInputField[GridCount], gbc);
         	}
         }
+    	//return returnJPanel;
     }
-    public void setField(int Number, int Value){
-    	int row = (Number / jsudokuSolver.MAXROW);
-    	int col = Number - row * jsudokuSolver.MAXROW;
-    	System.out.println("row = " + row + " col = " + col);
-    	SudokuInputField[Number].setText(""+Value);
+    //Sudoku View
+    public void setrhsPaneText(String rhsPaneText){
+    	 rhsPane.setText(rhsPaneText); //rhsPaneText);
     }
+    public void setSudokuInputFieldValue( String[] Values){
+    	for (int i = 1; i< SudokuInputField.length; i++) {
+    		SudokuInputFieldValue[i] = Values[i];
+    		System.out.println("View: setSudokuInputFieldValue - i: " + i + " Value = |" + Values[i] + "|");
+    		SudokuInputField[i].setText(Values[i]);
+    		//lhs.repaint();
+    	}
+    }
+    
 
+
+    /**
+     * Funktionen bereitstellen, mit denen man später aus
+     * dem Controller die nötigen Listener hinzufügen kann
+     */
+
+    // Sudoku Listener
+    public void setCandidatesInCell(ActionListener l){
+        this.createCandidatesInCell.addActionListener(l);
+    }
+    public void setFilledSudokuGrid(ActionListener l){
+        this.btnClearrhsPane.addActionListener(l);
+    }
 }
