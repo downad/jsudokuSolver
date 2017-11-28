@@ -1,5 +1,6 @@
 package sudoko_solver;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,6 +27,7 @@ public class jsudokuSolver {
 	floor					Ein horizontales Band ist ein Stock (engl.: floor).
 	tower					Ein vertikales ist ein Turm (engl.: tower). 
  */
+	// Info zum Sudoku
 	public final static int BLOCKROW = 3;
 	public final static int BLOCKCOL = 3;
 	public final static int MAXNUMBER = 9;
@@ -35,12 +37,17 @@ public class jsudokuSolver {
 	
 	public static void main(String[] args){		
 
-
+/*
 		// Sudoku inititalisieren 
 		MainControl Sudoku = new MainControl();
 		Sudoku.StartSudoku();
 		// Sudoku laden
-		
+*/		
+		ArrayList<String[]> SudokuGame = SudokuDaten.myGame();
+		for (int i = 1; i <SudokuGame.size(); i++) {
+			//String[] a = SudokuGame[i];
+			System.out.println("Coordinate: " + SudokuGame.get(i)[0] + " Value " + SudokuGame.get(i)[1]);
+		}
 		//GUI Starten		
 		MainGUI gui = new MainGUI();
 		//SimpleFTF.main();

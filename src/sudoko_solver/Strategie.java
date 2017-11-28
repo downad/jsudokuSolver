@@ -1,13 +1,19 @@
 package sudoko_solver;
 
-public class Strategie extends MainControl{
+import java.util.HashMap;
+import java.util.Map;
 
+public class Strategie {
+
+//	public Map<String, SudokuCell> cell = new HashMap<String, SudokuCell>();
 	
-	public static void FindValueAndClearAllowedNumber(){
+/*	
+	public void FindValueAndClearAllowedNumber(){
 		/* durchlaufe alle Zellen
 		 * ist eine Zahl gesetzt, so lösche dies in 
 		 * COL, ROW, BLOCK
 		 */
+	/*
 		int col = 1;
 		for (int row = 1; row<= jsudokuSolver.MAXROW; row++) {
 			for (col = 1; col<= jsudokuSolver.MAXCOL; col++) {
@@ -17,13 +23,14 @@ public class Strategie extends MainControl{
 			}
 		}
 	}
-	public static void ClearAllowedNumber(int row, int col){
+	public void ClearAllowedNumber(int row, int col){
 		/* durchlaufe alle Zellen
 		 * ist eine Zahl gesetzt, so lösche dies in 
 		 * COL, ROW, BLOCK
 		 */
-		int Value = cell.get(""+row+col).getCellValue();
+		//int Value = cell.get(""+row+col).getCellValue();
 		//hole MyRow
+	/*
 		String[] MyRow = cell.get(""+row+col).getMyROW();
 		for (int i = 1; i< (MyRow.length) - 1; i++) {
 			TestNumberAndClear(MyRow[i], Value);
@@ -40,14 +47,15 @@ public class Strategie extends MainControl{
 		}
 	}
 
-	public static boolean TestNumberAndClear(String CellKoordiante, int Number ){
+	public boolean TestNumberAndClear(String CellKoordiante, int Number ){
 		if (cell.get(CellKoordiante).getIsSolved() == false) {
 			cell.get(CellKoordiante).setNotPossibleValue(Number);
 			System.out.println(" Die Zelle [" + CellKoordiante + "] ist nicht gelöste, lösche die Nummer " + Number);
 		}
 		return true;
 	}
-	public static int findNakedSingle(){
+	public int findNakedSingle(){
 		return 0;
 	}
+	*/
 }
