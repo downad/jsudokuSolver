@@ -1,9 +1,5 @@
 package sudoko_solver;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 public class jsudokuSolver {
 /*
@@ -41,40 +37,12 @@ public class jsudokuSolver {
      * Komponenten zu Initialisieren und die erste
      * View anzuzeigen
      */
-    public static void main(String [] args){
+    public static void main(String [] args) throws Exception {
         controller = new SudokuController();
 
         controller.showView();
     }
-//	public static void main(String[] args){	
-		
 
-/*
-		// Sudoku inititalisieren 
-		MainControl Sudoku = new MainControl();
-		Sudoku.StartSudoku();
-		// Sudoku laden
-*/		
-		/*
-		ArrayList<String[]> SudokuGame = SudokuDaten.myGame();
-		for (int i = 1; i <SudokuGame.size(); i++) {
-			//String[] a = SudokuGame[i];
-			System.out.println("Coordinate: " + SudokuGame.get(i)[0] + " Value " + SudokuGame.get(i)[1]);
-		}
-		
-		MainControl Sudoku = new MainControl();
-		SudokuGUI gui = new SudokuGUI();
-		Sudoku.StartSudoku();
-		String a = Sudoku.showCandidates();
-		gui.setrhs(a);
-		//
-		//GUI Starten		
-		//MainGUI gui = new MainGUI();
-		//SimpleFTF.main();
-		 * 
-		 */
-		
-//	}
 	
 
 		

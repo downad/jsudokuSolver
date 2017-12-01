@@ -43,7 +43,7 @@ public class SudokuCell {
 			
 		}
 	}
-	
+	/*
 	private void setCoordinate(int initRow, int initCol){
 		StringBuilder str = new StringBuilder(String.valueOf (initRow));
 		str.append(String.valueOf (initCol));
@@ -52,6 +52,7 @@ public class SudokuCell {
 		col = initCol;		
 		//System.out.println("SudokuCell: setCoordinate - row = " + initRow + " col = " + initCol + " name = " + cellName);
 	}
+	*/
 	public void setCellValue ( int Value, boolean IsSolved, int IsSolvedBy) {
 		value = Value;
 		isSolved = IsSolved;

@@ -1,26 +1,11 @@
 package sudoko_solver;
 
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
 
-import javax.swing.*;
-import javax.swing.text.DefaultFormatterFactory;
-import javax.swing.text.MaskFormatter;
-import javax.swing.text.NumberFormatter;
-
+/*
 
 public class MainGUI extends JFrame {
 
-    /**
-	 * 
-	 */
+
 	private static final long serialVersionUID = 2275551785684792559L;
 	
 	// Titel der Fensters
@@ -63,7 +48,7 @@ public class MainGUI extends JFrame {
 	 	1 = btnClear = new JButton("Lösche die Hilfen"); 
 		2 = btnAllValue = new JButton("Alle Möglichkeiten");
 		3 = btnNotOnlyAllowedNumber = new JButton("Alle Zahlen die Nicht erlaubt sind");
-	*/
+	//
 	private static int ShowInrhsPane = 1;
 	
 	// buttons
@@ -85,8 +70,8 @@ public class MainGUI extends JFrame {
 	private MainControl Sudoku = new MainControl();
 			
 	private int newEvent =1; //neues Event
-	private PropertyChangeListener myEventListener = new FormattedTextFieldListener();
-	private PropertyChangeSupport changes = new PropertyChangeSupport( this );
+	//private PropertyChangeListener myEventListener = new FormattedTextFieldListener();
+	//private PropertyChangeSupport changes = new PropertyChangeSupport( this );
 
 
 
@@ -250,7 +235,7 @@ public class MainGUI extends JFrame {
     		}
     		
     		// Eventlistener
-    		SudokuInputField[i].addPropertyChangeListener("value", new FormattedTextFieldListener());
+    		//SudokuInputField[i].addPropertyChangeListener("value", new FormattedTextFieldListener());
     		/*
     		SudokuInputField[i].addPropertyChangeListener(new PropertyChangeListener() {
             	@Override public void propertyChange(PropertyChangeEvent e) {
@@ -295,7 +280,7 @@ public class MainGUI extends JFrame {
             		}
             	}            	
     		});
-    	*/
+    	//
     	}
     	
     }
@@ -365,3 +350,4 @@ public class MainGUI extends JFrame {
     }
 
 }
+*/

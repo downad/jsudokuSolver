@@ -1,10 +1,7 @@
 package sudoko_solver;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
+/*
 public class MainControl {
 	public  Map<String, SudokuCell> cell = new HashMap<String, SudokuCell>();
 	public  String[][] ROW = new String[(jsudokuSolver.MAXROW+1)][(jsudokuSolver.MAXCOL+1)];
@@ -30,11 +27,11 @@ public class MainControl {
 		createSudoku();
 	}
 
-	/* ShowInrhsPane 
-		1 = btnAllValue = new JButton("Alle Möglichkeiten");
-		2 = btnClear = new JButton("Lösche die Hilfen"); 
-		3 = btnNotOnlyAllowedNumber = new JButton("Alle Zahlen die Nicht erlaubt sind");
-	*/
+	//ShowInrhsPane 
+	//	1 = btnAllValue = new JButton("Alle Möglichkeiten");
+	//	2 = btnClear = new JButton("Lösche die Hilfen"); 
+	//	3 = btnNotOnlyAllowedNumber = new JButton("Alle Zahlen die Nicht erlaubt sind");
+	//
 	public String SudokuHilfen( int ShowInrhsPane){
 		String returnString = "";
 		if (ShowInrhsPane == 1) { returnString = SudokuHilfeClear();}
@@ -257,10 +254,10 @@ public class MainControl {
 	}
 	
 	public void createListOfAllowedNumberInAllSudokuCells(){
-		/* durchlaufe alle Zellen
-		 * ist eine Zahl gesetzt, so lösche dies in 
-		 * COL, ROW, BLOCK
-		 */
+		// durchlaufe alle Zellen
+		// * ist eine Zahl gesetzt, so lösche dies in 
+		// * COL, ROW, BLOCK
+		// /
 		int col = 1;
 		for (int row = 1; row<= jsudokuSolver.MAXROW; row++) {
 			for (col = 1; col<= jsudokuSolver.MAXCOL; col++) {
@@ -271,10 +268,10 @@ public class MainControl {
 		}
 	}
 	public void createListOfAllowedNumberInCell(int row, int col){
-		/* durchlaufe alle Zellen
-		 * ist eine Zahl gesetzt, so lösche dies in 
-		 * COL, ROW, BLOCK
-		 */
+		// * durchlaufe alle Zellen
+		 //* ist eine Zahl gesetzt, so lösche dies in 
+		// * COL, ROW, BLOCK
+		// /
 		int Value = cell.get(""+row+col).getCellValue();
 		//hole MyRow
 		String[] MyRow = cell.get(""+row+col).getMyROW();
@@ -306,4 +303,5 @@ public class MainControl {
 	public int findNakedSingle(){
 		return 0;
 	}
-}
+	*/
+//}

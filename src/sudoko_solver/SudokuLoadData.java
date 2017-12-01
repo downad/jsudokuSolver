@@ -2,7 +2,7 @@ package sudoko_solver;
 
 import java.util.ArrayList;
 
-public class SudokuDaten {
+public class SudokuLoadData {
 	//9x*9 Sudoku
 	
 	public static ArrayList<String[]> myGame() {

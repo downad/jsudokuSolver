@@ -11,6 +11,6 @@ public class SudokoSolvingStep {
 		 IsSolvedBy = isSolved;
 	}
 	public String getAll() {
-		return ("Zelle: " + Coordinate + " wurde mit dem Wert " + Value + " gelöst durch " + IsSolvedBy);
+		return ("SudokoSolvingStep - Die Zelle: " + Coordinate + " wurde mit dem Wert " + Value + " gelöst durch " + IsSolvedBy);
 	}
 }

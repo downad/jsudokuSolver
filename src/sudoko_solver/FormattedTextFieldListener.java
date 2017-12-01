@@ -1,17 +1,15 @@
 package sudoko_solver;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-
+/*
 class FormattedTextFieldListener implements PropertyChangeListener {
-     	//@Override 
+     	@Override 
 	public void propertyChange(PropertyChangeEvent e) {
 		Object source = e.getSource();
 		// Zerlegen der Source
 		String a[] = source.toString().split(",");
 		String b[] = a[0].split("Field");
 		StringBuilder c = new StringBuilder(b[1]);
-		// Erstze das DOOFE [
+		// Ersetze das DOOFE [
 		c.setCharAt(0, '0');
 
 		int GridNumber = Integer.parseInt(c.toString());
@@ -19,6 +17,8 @@ class FormattedTextFieldListener implements PropertyChangeListener {
 			int Value = Integer.parseInt(e.getNewValue().toString());
 			int solvedBy = 2; // manuelle Änderung
 			System.out.println("FormattedTextFieldListener - Gridnumber: " + GridNumber + " Value: " + Value + " solvedBy = " +solvedBy);
+			SudokuView.ChangeOnInputField = new InputFieldChanges(GridNumber,  e.getOldValue(),  e.getNewValue(), solvedBy);
+//			ChangeOnInputField[0] = GridNumber;
 		}
 		/*
 		System.out.println(" Die Quelle " + source + " hat das Event ausgelöst" );
@@ -35,6 +35,7 @@ class FormattedTextFieldListener implements PropertyChangeListener {
 		System.out.println(" - Split b[1]: " + b[1]);   
 		System.out.println(" - c: " + c);   		
 		*/
-		
+	/*	
 	}
 }
+*/

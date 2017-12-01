@@ -7,23 +7,32 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.text.ParseException;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
-import javax.swing.JFormattedTextField;
+//import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
-import javax.swing.text.NumberFormatter;
+import javax.swing.SwingUtilities;
+//import javax.swing.text.NumberFormatter;
 
 public class SudokuView  extends JFrame {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 4441458086756034032L;
+
+	
 
 	// Titel der Fensters
 	private static String WindowTitle = "Sudoku - My Sudoku-Solver mit Java";
@@ -62,12 +71,6 @@ public class SudokuView  extends JFrame {
 	private static int BottomPaneWidth = 1150;
 	private static int BottomPaneHeight = 100;
 	
-	/* ShowInrhsPane 
-	 	1 = btnClear = new JButton("Lösche die Hilfen"); 
-		2 = btnAllValue = new JButton("Alle Möglichkeiten");
-		3 = btnNotOnlyAllowedNumber = new JButton("Alle Zahlen die Nicht erlaubt sind");
-	*/
-	private static int ShowInrhsPane = 1;
 	
 	// buttons
 	JButton createCandidatesInCell = new JButton("find Candidates");
@@ -81,13 +84,72 @@ public class SudokuView  extends JFrame {
 	
 	
 	// allgemeine Variablen
-	private JFormattedTextField SudokuInputField[]= new JFormattedTextField[(jsudokuSolver.MAXROW * jsudokuSolver.MAXCOL) + 1];
-		
-	private Font givenFont = new Font("SansSerif", Font.BOLD, 20);
-	private Font font1 = new Font("SansSerif", Font.BOLD, 20);
-	private String[] SudokuInputFieldValue = new String[(jsudokuSolver.MAXROW * jsudokuSolver.MAXCOL) + 1];
+	//private JFormattedTextField SudokuInputField[]= new JFormattedTextField[(jsudokuSolver.MAXROW * jsudokuSolver.MAXCOL) + 1];
+	private JTextField SudokuInputField[]= new JTextField[(jsudokuSolver.MAXROW * jsudokuSolver.MAXCOL) + 1];
 	
+	private Font givenFont = new Font("SansSerif", Font.BOLD, 20);
 
+	private PropertyChangeSupport changes = new PropertyChangeSupport( this );
+	
+	
+    private int InputFieldEventGridNumber = 0;
+	private int InputFieldEventNewValue =0;
+	private int InputFieldEventsolvedBy = 0;
+	//private String InputFieldEventOldValue ="";
+	public void setInputEventTriple(int initGridnumber, int initNewValue, int initSolvedBy) { 
+		InputFieldEventGridNumber = initGridnumber; 
+		InputFieldEventNewValue = initNewValue;
+		InputFieldEventsolvedBy = initSolvedBy; 
+	}
+	public int[] getInputEventTripple(){
+		int[] returnInt = new int[3];
+		// [0] GridNumber [1] Value [2] solvedBy
+		returnInt[0] = InputFieldEventGridNumber; 
+		returnInt[1] = InputFieldEventNewValue;
+		returnInt[2] = InputFieldEventsolvedBy;
+		return returnInt;
+	}
+	public void inputEventValueIsSetInCell(boolean valueIsSetInCell){
+		if (valueIsSetInCell == true){
+			SudokuInputField[InputFieldEventGridNumber].setText(""+InputFieldEventNewValue);
+			SudokuInputField[InputFieldEventGridNumber].setEditable(false);
+			SudokuInputField[InputFieldEventGridNumber].setBackground(Color.lightGray); 
+			createCandidatesInCell.doClick();
+		} else {
+			if (SudokuInputField[InputFieldEventGridNumber].isEditable() == true) {
+				SudokuInputField[InputFieldEventGridNumber].setText("");
+			}
+		}
+	}
+	public int getEventGridNumber() { 
+		return InputFieldEventGridNumber; 
+	}
+	public void setEventGridNumber(int initGridnumber) { 
+		InputFieldEventGridNumber = initGridnumber; 	
+	}
+	/*
+	public String getEventOldValue() { 
+		return InputFieldEventOldValue; 
+	}
+	public void setEventOldValue(String initOldValue) { 
+		InputFieldEventOldValue = initOldValue; 	
+	}
+	*/
+	public int getEventNewValue() { 
+		return InputFieldEventNewValue;
+	}
+	public void setEventNewValue(int initNewValue) { 
+		InputFieldEventNewValue = initNewValue;
+	}
+	public int getEventSolvedBy() { 
+		return InputFieldEventsolvedBy; 
+	}
+	public void setEventSolvedBy(int initSolvedBy) { 
+		InputFieldEventsolvedBy = initSolvedBy; 	
+	}
+
+	
+	
     public SudokuView()  {
     	initSudokuInputField();
     	init();
@@ -101,7 +163,6 @@ public class SudokuView  extends JFrame {
         frame.setMaximumSize(new Dimension(WindowWidth,WindowHeight));
         frame.setLocation(WindowLocX, WindowLocY);
         
-
 //      Sudokofeld (WEST)
 //        JPanel lhs = new JPanel();
         lhs.setPreferredSize(new Dimension(lhsWidth,lhsHeight));
@@ -113,7 +174,6 @@ public class SudokuView  extends JFrame {
         getSudokuInputGrid();
         lhs.add(SudokuGrid);
 //      End Sudokofeld (WEST)
-
         
 //      Sudoku Hilfen (EAST)
         rhs.setPreferredSize(new Dimension(rhsWidth,rhsHeight));
@@ -127,20 +187,17 @@ public class SudokuView  extends JFrame {
         rhsPane.setEditable(false);
         rhs.add(rhsPane);
 //      End Sudoku-Hilfen (EAST)
-        
-        
+                
 //      Spacer (CENTER)
         JPanel center = new JPanel();
         center.setSize(0, 0);
 //      End Spacer (CENTER)
-        
-        
+                
 //    	Sudoku-Lösungs-Strategien (NORTH)
         JPanel top = new JPanel();
         top.setPreferredSize(new Dimension(TopPaneWidth,TopPaneHeight));
         top.setAlignmentX(Component.CENTER_ALIGNMENT);
         top.setBorder(BorderFactory.createTitledBorder(TopTitle));
-        //top.add(createCandidatesInCell);
         top.add(findNakedSingle);
         top.add(refresh);
 //    	End Sudoku-Lösungs-Strategien (NORTH)
@@ -152,11 +209,6 @@ public class SudokuView  extends JFrame {
 		bottom.setBorder(BorderFactory.createTitledBorder(BottomTitle));
 		bottom.add(createCandidatesInCell);
 		bottom.add(btnClearrhsPane);
-
-		//bottom.add(btnAllValue);
-		//bottom.add(btnNotOnlyAllowedNumber);
-
-
 //    	End Ausgabefilter (SOUTH) 
     
 // bastle das alles zusammen
@@ -167,63 +219,111 @@ public class SudokuView  extends JFrame {
         frame.add(top, BorderLayout.NORTH);
         frame.add(bottom, BorderLayout.SOUTH);
         
-        
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
+    }
 
+    public int getGridNumberByFocusEvent(FocusEvent e){
+    	int GridNumber = 0;
+    	Object source = e.getSource();
+		String a[] = source.toString().split(",");
+		String b[] = a[0].split("Field");
+		StringBuilder c = new StringBuilder(b[1]);
+		// Ersetze das DOOFE [
+		c.setCharAt(0, '0');
+		GridNumber= Integer.parseInt(c.toString());
+    	return GridNumber;
     }
     private void initSudokuInputField() {
-        //NumberFormatter nf = new NumberFormatter();
-    	NumberFormatter nf = new NumberFormatter() {
-            // we have to allow the empty string, the call chain is
-            //      DefaultFormatter
-            //              DefaultDocumentFilter.remove
-            //              replace
-            //              canReplace
-            //              isValidEdit
-            //              stringToValue
-            public Object stringToValue(String string)
-                throws ParseException {
-                if (string == null || string.length() == 0) {
-                    return null;
-                }
-                return super.stringToValue(string);
-            }
-        };
-    	nf.setMinimum(new Integer(0));
-    	nf.setMaximum((jsudokuSolver.MAXNUMBER));
     	int FieldWidth = 63; //	63 rechnerisch
     	int FieldHeight= 83; // 83 rechnerisch
     	
     	for (int i = 1; i < (jsudokuSolver.MAXROW * jsudokuSolver.MAXCOL) + 1; i++) {
-    		SudokuInputField[i] = new JFormattedTextField(nf);
+    		SudokuInputField[i] = new JTextField();
     		SudokuInputField[i].setHorizontalAlignment(JTextField.CENTER);
     		SudokuInputField[i].setFont(givenFont);
-    		//SudokuInputField[i].setColumns(2);
     		SudokuInputField[i].setName("" + i);
-    		//SudokuInputField[i].setText(SudokuInputField[i].getName()); //setText(Sudoku.getCellValueAsStringByNumber(i));
-    		//SudokuInputField[i].setText(SudokuInputFieldValue[i]); //Sudoku.getCellValueAsStringByNumber(i));
-    		
-    		System.out.println("View: initSudokuInputField - SudokuInputFieldValue [" + i +"] = " + SudokuInputFieldValue[i]);
     		SudokuInputField[i].setPreferredSize(new Dimension(FieldWidth,FieldHeight));
     		SudokuInputField[i].setMaximumSize(new Dimension(FieldWidth,FieldHeight));
-    		SudokuInputField[i].setMinimumSize(new Dimension(FieldWidth,FieldHeight));
-    		/*
-    		if (Sudoku.isCellSolvedByNumber(i) == true) {
-    			SudokuInputField[i].setEditable(false);
-    		} else {
-    			SudokuInputField[i].setText("-");
-    		}
-    		*/
-    		// Eventlistener
-    		SudokuInputField[i].addPropertyChangeListener("value", new FormattedTextFieldListener());
+    		SudokuInputField[i].setMinimumSize(new Dimension(FieldWidth,FieldHeight));		
+    		SudokuInputField[i].addFocusListener(new FocusAdapter(){
+    				//private String OldValue = "";
+    				private String NewValue = "";
+
+    				@Override
+    		       public void focusGained(final FocusEvent e){
+    		           //i always like to wrap this method with swing utilities
+    		           // which puts it at the end of the EventQueue, so it's executed after all pending events
+    		           SwingUtilities.invokeLater(new Runnable(){
+    		                @Override
+    		                public void run(){
+    		                    // Hole aus der Quelle die GridNumber
+    		                	// färbe das Feld rot
+    		                	int GridNumber= getGridNumberByFocusEvent(e);
+    		            		SudokuInputField[GridNumber].setBackground(Color.RED); 
+    		            		//OldValue = SudokuInputField[GridNumber].getText();
+    		                }
+    		           });
+    		       } 
+    		       @Override
+    		       public void focusLost(final FocusEvent e){
+    		           //i always like to wrap this method with swing utilities
+    		           // which puts it at the end of the EventQueue, so it's executed after all pending events
+    		           SwingUtilities.invokeLater(new Runnable(){
+    		                @Override
+    		                public void run(){
+    		                    // Hole aus der Quelle die GridNumber
+    		                	// färbe das Feld hellgrau
+    		                	int GridNumber= getGridNumberByFocusEvent(e);
+    		            		if (SudokuInputField[GridNumber].isEditable() == true) {
+    		            			SudokuInputField[GridNumber].setBackground(Color.WHITE); 
+    		            		} else {
+    		            			SudokuInputField[GridNumber].setBackground(Color.lightGray); 
+    		            		}
+    		            		NewValue = SudokuInputField[GridNumber].getText();
+    		            		// Prüfe die Eingabe
+    		            		int number = getIntegerFromString(NewValue);
+     		            		if (number >0 && number <= jsudokuSolver.MAXNUMBER ) {
+    		            			System.out.println("View - focusLost NewValue ist ein erlaubter Integer > 0 Value = >"+number+"<");
+         		            		int solvedBy = 2;
+         		            		// [0] GridNumber [1] Value [2] solvedBy
+         		            		setInputEventTriple(GridNumber,  number,  solvedBy);
+         		            		//setEventNewValue(number);
+									//setEventGridNumber(GridNumber);
+									//setEventSolvedBy(solvedBy);	
+									changes.firePropertyChange("Text", NewValue, number);    		            			
+    		            		} else {
+    		            			if (SudokuInputField[GridNumber].isEditable()== true) {
+    		            				SudokuInputField[GridNumber].setText("");
+    		            			}
+    		            		}
+    		            		System.out.println("View - focusLost NewValue " + NewValue );
+    		                }
+    		           });
+    		       }
+    		  });
+    		  
     	}
+    	
     }
+    // Ist the Value an Integer?
+    private static Integer getIntegerFromString(String str) {
+        Integer n = null;
+        System.out.println("View - getIntegerFromString str |" + str + "|");
+        try {
+            n = Integer.parseInt(str);
+        } catch (Exception ex) {
+            // leave n null, the string is invalid
+        	n= -99;
+        }
+        System.out.println("View - getIntegerFromString n |" + n + "|");
+        return n;
+    }
+
     private void getSudokuInputGrid(){
         GridBagConstraints gbc = new GridBagConstraints();
-        //JPanel returnJPanel = new JPanel();
-		gbc.weightx = 1.0;
+ 		gbc.weightx = 1.0;
 		gbc.weighty = 1.0;
 
         int GridCount = 0;
@@ -270,14 +370,23 @@ public class SudokuView  extends JFrame {
     }
     public void setSudokuInputFieldValue( String[] Values){
     	for (int i = 1; i< SudokuInputField.length; i++) {
-    		SudokuInputFieldValue[i] = Values[i];
-    		System.out.println("View: setSudokuInputFieldValue - i: " + i + " Value = |" + Values[i] + "|");
-    		SudokuInputField[i].setText(Values[i]);
+    		//SudokuInputFieldValue[i] = Values[i];
+    		String Value = Values[i];
+    		if (Integer.parseInt(Value) > 0) {
+    			//System.out.println("View: setSudokuInputFieldValue - i: " + i + " Value = |" + Values[i] + "|");
+    			SudokuInputField[i].setText(Values[i]);
+    			SudokuInputField[i].setEditable(false);
+    			SudokuInputField[i].setBackground(Color.lightGray);
+    		} else {
+    			SudokuInputField[i].setText("");
+    		}
     		//lhs.repaint();
     	}
     }
     
-
+    public void setChangeOnInputField(int GridNumber, Object OldValue, Object NewValue, int solbedBy){
+    	
+    }
 
     /**
      * Funktionen bereitstellen, mit denen man später aus
@@ -285,10 +394,24 @@ public class SudokuView  extends JFrame {
      */
 
     // Sudoku Listener
+    /*
+     * Button createCandidatesInCell - setze in rhsPaneText eine
+     * html-Table mit Zahl oder Candidats-List
+     */
     public void setCandidatesInCell(ActionListener l){
         this.createCandidatesInCell.addActionListener(l);
     }
+    /*
+     * Button btnClearrhsPane - setze in rhsPaneText eine
+     * html-Table mit Zahl oder leerem Feld
+     */
     public void setFilledSudokuGrid(ActionListener l){
         this.btnClearrhsPane.addActionListener(l);
     }
+    public void setChangeOnInputField( PropertyChangeListener l )
+    {
+    	//System.out.println("View: -setChangeOnInputField ");
+    	this.changes.addPropertyChangeListener( l );
+    }
+    
 }
