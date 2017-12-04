@@ -14,12 +14,14 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.text.ParseException;
+import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 //import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
@@ -73,19 +75,28 @@ public class SudokuView  extends JFrame {
 	
 	
 	// buttons
-	JButton createCandidatesInCell = new JButton("find Candidates");
-	JButton findNakedSingle = new JButton("NakedSingle");
-	JButton refresh = new JButton("refresh rhs");
+	JButton createCandidatesInCell = new JButton("find Candidates"); 	// Hilfen - Bottom
+	JButton btnClearrhsPane = new JButton("Lösche die Hilfen");			// Hilfen - Bottom
+	JButton btnDeleteEntry = new JButton("Eingabe löschen");			// Hilfen - Bottom
+	
+	JButton findNakedSingle = new JButton("NakedSingle");				// Methode - Top
 	
 	
-	JButton btnAllValue = new JButton("Alle Möglichkeiten");
-	JButton btnClearrhsPane = new JButton("Lösche die Hilfen");
-	JButton btnNotOnlyAllowedNumber = new JButton("Alle Zahlen die Nicht erlaubt sind");
+	//JButton refresh = new JButton("refresh rhs");
+	//Button btnAllValue = new JButton("Alle Möglichkeiten");
+	//JButton btnNotOnlyAllowedNumber = new JButton("Alle Zahlen die Nicht erlaubt sind");
 	
 	
 	// allgemeine Variablen
 	//private JFormattedTextField SudokuInputField[]= new JFormattedTextField[(jsudokuSolver.MAXROW * jsudokuSolver.MAXCOL) + 1];
 	private JTextField SudokuInputField[]= new JTextField[(jsudokuSolver.MAXROW * jsudokuSolver.MAXCOL) + 1];
+	private int gridNumberOfActiveCell = 0;
+	private void setGridNumberOfActiveCell(int number){
+		gridNumberOfActiveCell = number;
+	}
+	public int getGridNumberOfActiveCell(){
+		return gridNumberOfActiveCell;
+	}
 	
 	private Font givenFont = new Font("SansSerif", Font.BOLD, 20);
 
@@ -95,7 +106,7 @@ public class SudokuView  extends JFrame {
     private int InputFieldEventGridNumber = 0;
 	private int InputFieldEventNewValue =0;
 	private int InputFieldEventsolvedBy = 0;
-	//private String InputFieldEventOldValue ="";
+
 	public void setInputEventTriple(int initGridnumber, int initNewValue, int initSolvedBy) { 
 		InputFieldEventGridNumber = initGridnumber; 
 		InputFieldEventNewValue = initNewValue;
@@ -127,14 +138,7 @@ public class SudokuView  extends JFrame {
 	public void setEventGridNumber(int initGridnumber) { 
 		InputFieldEventGridNumber = initGridnumber; 	
 	}
-	/*
-	public String getEventOldValue() { 
-		return InputFieldEventOldValue; 
-	}
-	public void setEventOldValue(String initOldValue) { 
-		InputFieldEventOldValue = initOldValue; 	
-	}
-	*/
+
 	public int getEventNewValue() { 
 		return InputFieldEventNewValue;
 	}
@@ -180,10 +184,7 @@ public class SudokuView  extends JFrame {
         rhs.setBorder(BorderFactory.createTitledBorder(RightTitle));        
         rhsPane.setPreferredSize(new Dimension(rhsPaneWidth,rhsPaneHeight));//setSize(400,300);
         rhsPane.setContentType("text/html");
-        //String rhsPaneText = MainControl.SudokuHilfeClear();
-        //rhsPane.setText(Sudoku.SudokuHilfeClear()); //rhsPaneText);
         rhsPane.setText("rechts"); //rhsPaneText);
-        
         rhsPane.setEditable(false);
         rhs.add(rhsPane);
 //      End Sudoku-Hilfen (EAST)
@@ -199,7 +200,7 @@ public class SudokuView  extends JFrame {
         top.setAlignmentX(Component.CENTER_ALIGNMENT);
         top.setBorder(BorderFactory.createTitledBorder(TopTitle));
         top.add(findNakedSingle);
-        top.add(refresh);
+        //top.add(refresh);
 //    	End Sudoku-Lösungs-Strategien (NORTH)
 
 //    	Ausgabefilter (SOUTH)
@@ -209,6 +210,7 @@ public class SudokuView  extends JFrame {
 		bottom.setBorder(BorderFactory.createTitledBorder(BottomTitle));
 		bottom.add(createCandidatesInCell);
 		bottom.add(btnClearrhsPane);
+		bottom.add(btnDeleteEntry);
 //    	End Ausgabefilter (SOUTH) 
     
 // bastle das alles zusammen
@@ -261,6 +263,7 @@ public class SudokuView  extends JFrame {
     		                    // Hole aus der Quelle die GridNumber
     		                	// färbe das Feld rot
     		                	int GridNumber= getGridNumberByFocusEvent(e);
+    		                	setGridNumberOfActiveCell(GridNumber);
     		            		SudokuInputField[GridNumber].setBackground(Color.RED); 
     		            		//OldValue = SudokuInputField[GridNumber].getText();
     		                }
@@ -289,9 +292,7 @@ public class SudokuView  extends JFrame {
          		            		int solvedBy = 2;
          		            		// [0] GridNumber [1] Value [2] solvedBy
          		            		setInputEventTriple(GridNumber,  number,  solvedBy);
-         		            		//setEventNewValue(number);
-									//setEventGridNumber(GridNumber);
-									//setEventSolvedBy(solvedBy);	
+	
 									changes.firePropertyChange("Text", NewValue, number);    		            			
     		            		} else {
     		            			if (SudokuInputField[GridNumber].isEditable()== true) {
@@ -367,7 +368,23 @@ public class SudokuView  extends JFrame {
     //Sudoku View
     public void setrhsPaneText(String rhsPaneText){
     	 rhsPane.setText(rhsPaneText); //rhsPaneText);
+    	 //System.out.println("View: - setrhsPaneText " + rhsPaneText);
     }
+    public void setLastrhsPaneText(String rhsPaneText){
+    	JScrollPane scrollPane = new JScrollPane();
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        //scrollPane.setBounds(50, 30, 300, 50);
+   	 	rhsPane.setText(rhsPaneText); //rhsPaneText);
+   	 	rhsPane.add(scrollPane);
+   	 //System.out.println("View: - setrhsPaneText " + rhsPaneText);
+   }
+    
+    /*
+     * wird beim Initialiseiren aufgerufen, 
+     * läuft einmalig, 
+     * 
+     */
     public void setSudokuInputFieldValue( String[] Values){
     	for (int i = 1; i< SudokuInputField.length; i++) {
     		//SudokuInputFieldValue[i] = Values[i];
@@ -377,6 +394,7 @@ public class SudokuView  extends JFrame {
     			SudokuInputField[i].setText(Values[i]);
     			SudokuInputField[i].setEditable(false);
     			SudokuInputField[i].setBackground(Color.lightGray);
+    			SudokuInputField[i].setForeground(Color.RED);
     		} else {
     			SudokuInputField[i].setText("");
     		}
@@ -384,8 +402,38 @@ public class SudokuView  extends JFrame {
     	}
     }
     
+    public void deleteCellValue(int gridNumber, boolean canBeDeleted, String rhsPaneText){
+    	if (canBeDeleted == true) {
+			SudokuInputField[gridNumber].setText("");
+			SudokuInputField[gridNumber].setEditable(true);
+			SudokuInputField[gridNumber].setBackground(Color.WHITE);
+			rhsPane.setText(rhsPaneText); //rhsPaneText);
+    	}
+    }
+    
     public void setChangeOnInputField(int GridNumber, Object OldValue, Object NewValue, int solbedBy){
     	
+    }
+    public void foundNakedSingle(ArrayList<int[]> setCellDouble) {
+    	// Naked Sigle hat einen Wert ermittelt, setze diesen und aktualisiere
+		//setCellDouble[0] = coordinates.get(i);
+		//setCellDouble[1] = ""+candidateValue;
+    	int value = 0;
+    	int gridNumber = 0;
+    	for (int i = 0; i < setCellDouble.size(); i++) {
+    		gridNumber = setCellDouble.get(i)[0];
+    		value = setCellDouble.get(i)[1];
+
+        	if ( value> 0) {
+        		System.out.println("View: -foundNakedSingle - Doublette: " + gridNumber + " -> " + value);
+        		setEventNewValue(value);
+        		setEventGridNumber(gridNumber);
+        		inputEventValueIsSetInCell(true);
+        	} else {
+        		inputEventValueIsSetInCell(false);
+        	}
+    	}
+
     }
 
     /**
@@ -408,10 +456,27 @@ public class SudokuView  extends JFrame {
     public void setFilledSudokuGrid(ActionListener l){
         this.btnClearrhsPane.addActionListener(l);
     }
+    /*
+     * Button btnDeleteEntry - Löschen den aktuellen Zelleninhalt
+     * falls die Zelle keine "given" war.
+     */
+    public void setbtnDeleteEntry(ActionListener l){
+        this.btnDeleteEntry.addActionListener(l);
+    }
+    /*
+     * Listerner für die InputFelder
+     */
     public void setChangeOnInputField( PropertyChangeListener l )
     {
     	//System.out.println("View: -setChangeOnInputField ");
     	this.changes.addPropertyChangeListener( l );
+    }
+    /*
+     * Button findNakedSingle - Durchsuche die Candidates 
+     * gibt es einen Candidaten nur einmal ->NakedSingle
+     */
+    public void setFindNakedSingle(ActionListener l){
+        this.findNakedSingle.addActionListener(l);
     }
     
 }

@@ -1,8 +1,13 @@
 package sudoko_solver;
 
+
 import java.util.ArrayList;
 import java.util.Arrays;
 
+/*
+ * Das ist die Kleinste Einheit eines Sudoku, die Zelle
+ *
+ */
 public class SudokuCell {
 	
 	private String cellName = "";
@@ -21,7 +26,6 @@ public class SudokuCell {
 	
 	public SudokuCell(int initRow, int initCol, int initValue, boolean initIsSolved, int initIsSolvedBy) {
 		// Checke values
-		//System.out.println("row = " + initRow + " col = " + initCol + " Value = " + String.valueOf(initValue) + " name = " + cellName);
 		boolean ValueCheckIsOK = true;
 		if (initRow < 1 && initRow > jsudokuSolver.MAXROW) {
 			ValueCheckIsOK = false;
@@ -43,16 +47,7 @@ public class SudokuCell {
 			
 		}
 	}
-	/*
-	private void setCoordinate(int initRow, int initCol){
-		StringBuilder str = new StringBuilder(String.valueOf (initRow));
-		str.append(String.valueOf (initCol));
-		cellName = str.toString();
-		row = initRow;
-		col = initCol;		
-		//System.out.println("SudokuCell: setCoordinate - row = " + initRow + " col = " + initCol + " name = " + cellName);
-	}
-	*/
+
 	public void setCellValue ( int Value, boolean IsSolved, int IsSolvedBy) {
 		value = Value;
 		isSolved = IsSolved;
@@ -60,6 +55,9 @@ public class SudokuCell {
 	}
 	public boolean getIsSolved() {
 		return isSolved;
+	}
+	public int getIsSolvedBy() {
+		return isSolvedBy;
 	}
 	public int getCellValue(){
 		//System.out.println("row = " + row + " col = " + col + " Value = " + String.valueOf(value));
@@ -135,5 +133,24 @@ public class SudokuCell {
 	public void setNotPossibleValue(int Number){
 		notPossibleValues[Number] = true;
 		clearCandidate(Number);
+	}
+	public void reset(){
+		value = 0;
+		isSolved = false;
+		isSolvedBy = 0;
+		resetCandidates();		
+	}
+	public void resetCandidates(){
+		if (isSolved == false) {
+			Arrays.fill(Candidates, true);
+			Arrays.fill(notPossibleValues, false);
+			notPossibleValues[0] = true;
+		}
+	}
+	public String getCoordinateWithSlash(){
+		return row + "/" +col;
+	}
+	public int getGridnumber(){
+		return ((row-1) * jsudokuSolver.MAXROW + col);
 	}
 }
