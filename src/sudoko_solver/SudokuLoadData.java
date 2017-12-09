@@ -9,7 +9,8 @@ public class SudokuLoadData {
 		ArrayList<String[]> b = new ArrayList<String[]>();
 		String[] ValueDouble = new String[2];
 		
-		String a = ".7.5.2.8.6...7.......193.6..5..31............139..62..3.7........2..5.91.98......";
+		//String a = ".7.5.2.8.6...7.......193.6..5..31............139..62..3.7........2..5.91.98......";
+		String a = ".7.5.2.8.62..7.......193.6..5..31............139..62..3.7........2..5.91.98......";
 		String[] tokens = a.split("");
 		int row = 1;
     	int col = 1;

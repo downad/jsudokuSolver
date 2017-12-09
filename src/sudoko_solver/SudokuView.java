@@ -15,9 +15,11 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 //import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -79,7 +81,18 @@ public class SudokuView  extends JFrame {
 	JButton btnClearrhsPane = new JButton("Lösche die Hilfen");			// Hilfen - Bottom
 	JButton btnDeleteEntry = new JButton("Eingabe löschen");			// Hilfen - Bottom
 	
-	JButton findNakedSingle = new JButton("NakedSingle");				// Methode - Top
+	// Lösestrategien
+	private boolean[] solvingStategie = { false,
+			true, // naked Single
+			//true, // hidden Single
+		};
+	public boolean[] getSolvingStrategie(){
+		return solvingStategie;
+	}
+	JButton autoSolve = new JButton("Automatik");						// AutoSolve - Top
+	//JButton findNakedSingle = new JButton("NakedSingle");				// Methode - Top
+	JCheckBox findNakedSingle = new JCheckBox("NakedSingle");			// Methode Top 	Naked Single
+	JCheckBox findHiddenSingle = new JCheckBox("HiddenSingle");			// Methode Top 	Hidden Single
 	
 	
 	//JButton refresh = new JButton("refresh rhs");
@@ -120,7 +133,19 @@ public class SudokuView  extends JFrame {
 		returnInt[2] = InputFieldEventsolvedBy;
 		return returnInt;
 	}
-	public void inputEventValueIsSetInCell(boolean valueIsSetInCell){
+	public void inputEventValueIsSetInCell(boolean valueIsSetInCell, int gridNumber, int value){
+		if (valueIsSetInCell == true){
+			SudokuInputField[gridNumber].setText(""+value);
+			SudokuInputField[gridNumber].setEditable(false);
+			SudokuInputField[gridNumber].setBackground(Color.lightGray); 
+			//createCandidatesInCell.doClick();
+		} else {
+			if (SudokuInputField[gridNumber].isEditable() == true) {
+				SudokuInputField[gridNumber].setText("");
+			}
+		}
+	}
+	public void inputEventValueIsSetInCell_old(boolean valueIsSetInCell){
 		if (valueIsSetInCell == true){
 			SudokuInputField[InputFieldEventGridNumber].setText(""+InputFieldEventNewValue);
 			SudokuInputField[InputFieldEventGridNumber].setEditable(false);
@@ -199,7 +224,9 @@ public class SudokuView  extends JFrame {
         top.setPreferredSize(new Dimension(TopPaneWidth,TopPaneHeight));
         top.setAlignmentX(Component.CENTER_ALIGNMENT);
         top.setBorder(BorderFactory.createTitledBorder(TopTitle));
+        top.add(autoSolve);
         top.add(findNakedSingle);
+        top.add(findHiddenSingle);
         //top.add(refresh);
 //    	End Sudoku-Lösungs-Strategien (NORTH)
 
@@ -371,12 +398,12 @@ public class SudokuView  extends JFrame {
     	 //System.out.println("View: - setrhsPaneText " + rhsPaneText);
     }
     public void setLastrhsPaneText(String rhsPaneText){
-    	JScrollPane scrollPane = new JScrollPane();
+    	JScrollPane scrollPane = new JScrollPane(rhsPane);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         //scrollPane.setBounds(50, 30, 300, 50);
    	 	rhsPane.setText(rhsPaneText); //rhsPaneText);
-   	 	rhsPane.add(scrollPane);
+   	 	rhs.add(scrollPane);
    	 //System.out.println("View: - setrhsPaneText " + rhsPaneText);
    }
     
@@ -401,7 +428,10 @@ public class SudokuView  extends JFrame {
     		//lhs.repaint();
     	}
     }
-    
+    /*
+     * kann die Zelle gelöschtwerden?
+     * Ja - dann löschen
+     */
     public void deleteCellValue(int gridNumber, boolean canBeDeleted, String rhsPaneText){
     	if (canBeDeleted == true) {
 			SudokuInputField[gridNumber].setText("");
@@ -414,26 +444,59 @@ public class SudokuView  extends JFrame {
     public void setChangeOnInputField(int GridNumber, Object OldValue, Object NewValue, int solbedBy){
     	
     }
-    public void foundNakedSingle(ArrayList<int[]> setCellDouble) {
-    	// Naked Sigle hat einen Wert ermittelt, setze diesen und aktualisiere
+    public void foundValueWithStrategie(LinkedList<logEntrySolving> allChangedCells) {
 		//setCellDouble[0] = coordinates.get(i);
 		//setCellDouble[1] = ""+candidateValue;
-    	int value = 0;
-    	int gridNumber = 0;
-    	for (int i = 0; i < setCellDouble.size(); i++) {
-    		gridNumber = setCellDouble.get(i)[0];
-    		value = setCellDouble.get(i)[1];
-
+    	int value = 0;		// was int
+    	int gridNumber = 0; // was int
+    	final long timeStart = System.currentTimeMillis(); 
+    	long timeEnd = System.currentTimeMillis(); 
+    	System.out.println("View: foundValueWithStrategie ");
+    	logEntrySolving changedCell;
+    	int i = 0;
+    	while (!allChangedCells.isEmpty()) {
+    		changedCell = allChangedCells.remove(0);  
+    		i++;
+    		timeEnd = System.currentTimeMillis(); 
+            System.out.println("View: foundValueWithStrategie "+i+". Durchlauf " + (timeEnd - timeStart) + " Millisek."); 
+            gridNumber = changedCell.getGridNumber(); //setCellDouble.get(i)[0];
+    		value = changedCell.getValue(); // setCellDouble.get(i)[1];
         	if ( value> 0) {
-        		System.out.println("View: -foundNakedSingle - Doublette: " + gridNumber + " -> " + value);
-        		setEventNewValue(value);
-        		setEventGridNumber(gridNumber);
-        		inputEventValueIsSetInCell(true);
+        		inputEventValueIsSetInCell(true, gridNumber, value);
         	} else {
-        		inputEventValueIsSetInCell(false);
+        		inputEventValueIsSetInCell(false, gridNumber, value);
+        	}
+        	  		
+    	}
+        timeEnd = System.currentTimeMillis(); 
+        System.out.println("View: foundValueWithStrategie" + (timeEnd - timeStart) + " Millisek."); 
+    }
+    
+    public void foundValueWithStrategie_old(LinkedList<int[]> setCellDouble) {
+		//setCellDouble[0] = coordinates.get(i);
+		//setCellDouble[1] = ""+candidateValue;
+    	int value = 0;		// was int
+    	int gridNumber = 0; // was int
+    	final long timeStart = System.currentTimeMillis(); 
+    	long timeEnd = System.currentTimeMillis(); 
+    	System.out.println("View: foundValueWithStrategie ");
+    	int[] cellDouble = new int[2];
+    	int i = 0;
+    	while (!setCellDouble.isEmpty()) {
+    		i++;
+    		timeEnd = System.currentTimeMillis(); 
+            System.out.println("View: foundValueWithStrategie "+i+". Durchlauf " + (timeEnd - timeStart) + " Millisek."); 
+            cellDouble = setCellDouble.remove();
+    		gridNumber = cellDouble[0]; //setCellDouble.get(i)[0];
+    		value = cellDouble[1]; // setCellDouble.get(i)[1];
+        	if ( value> 0) {
+        		inputEventValueIsSetInCell(true, gridNumber, value);
+        	} else {
+        		inputEventValueIsSetInCell(false, gridNumber, value);
         	}
     	}
-
+        timeEnd = System.currentTimeMillis(); 
+        System.out.println("View: foundValueWithStrategie" + (timeEnd - timeStart) + " Millisek."); 
     }
 
     /**
@@ -475,8 +538,22 @@ public class SudokuView  extends JFrame {
      * Button findNakedSingle - Durchsuche die Candidates 
      * gibt es einen Candidaten nur einmal ->NakedSingle
      */
+    public void autoSolve(ActionListener l){
+        this.autoSolve.addActionListener(l);
+    }
+    /*
+     * Button findNakedSingle - Durchsuche die Candidates 
+     * gibt es einen Candidaten nur einmal ->NakedSingle
+     */
     public void setFindNakedSingle(ActionListener l){
         this.findNakedSingle.addActionListener(l);
     }
     
+    /*
+     * Button findNakedSingle - Durchsuche die Candidates 
+     * gibt es einen Candidaten nur einmal ->NakedSingle
+     */
+    public void setHiddenNakedSingle(ActionListener l){
+        this.findHiddenSingle.addActionListener(l);
+    }
 }

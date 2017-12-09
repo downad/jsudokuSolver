@@ -22,6 +22,17 @@ public class jsudokuSolver {
 	band					Drei Blöcke in einer Reihe sind ein Band (engl.: band). 
 	floor					Ein horizontales Band ist ein Stock (engl.: floor).
 	tower					Ein vertikales ist ein Turm (engl.: tower). 
+	
+	
+	05.12.2017 - Optimierungen 
+		Zeit [ms]:
+			Min			5388
+			Max			5609
+			Mittelwert	5440,45
+			Median		5427
+
+
+	
  */
 	// Info zum Sudoku
 	public final static int BLOCKROW = 3;

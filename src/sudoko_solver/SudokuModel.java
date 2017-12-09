@@ -3,6 +3,7 @@ package sudoko_solver;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 
 /**
@@ -37,8 +38,9 @@ public class SudokuModel  {
 			{"", "77", "78", "79", "87", "88", "89", "97", "98", "99"}, // 9
 	};
 	
-	// Liste für dan Logging
-	private ArrayList<SudokoSolvingStep> logSudokuSteps = new ArrayList<>();
+	// Liste für das Logging
+	private ArrayList<logEntrySolving> logSolvingSteps = new ArrayList<>();
+	private ArrayList<LogEntryError> logError = new ArrayList<>();
 	
 	// TextFeld für rhsPane
     private String rhsPaneText = "";
@@ -68,6 +70,52 @@ public class SudokuModel  {
 			"naked single",	//  IsSolvedBy	3 = naked single
 			"Ende",			// 	IsSolvedBy 99 = Sudoku ist Solved
 	};
+    private boolean[] solvingStrategie = { false,false,false, // 0,1,2 ohne Bedeutung
+    		false, //  3 - naked Single
+    		false, //  4 - hidden Single
+    		false, //  5 - 
+    		false, //  6 - 
+    		false, //  7 - 
+    		false, //  8 - 
+    		false, //  9 - 
+    		false, // 10 -
+    		false, // 11 -
+    		
+    };
+    private String[] solvingStrategieText = { "1","2","3", // 0,1,2 ohne Bedeutung
+    		"Naked Single", 	//  3 - naked Single
+    		"Hidden Single", 	//  4 - hidden Single
+    		"5", //  5 - 
+    		"6", //  6 - 
+    		"7", //  7 - 
+    		"8", //  8 - 
+    		"9", //  9 - 
+    		"10", // 10 -
+    		"11", // 11 -
+    		
+    };
+    public void changeSolvingStrategie (int number){
+    	if (solvingStrategie[number] == true) {
+        	System.out.println("Model: changeSolvingStrategie - Change " +solvingStrategieText[number] + " to false");
+        	solvingStrategie[number] = false;
+    	} else {
+    		System.out.println("Model: changeSolvingStrategie - Change " +solvingStrategieText[number] + " to true");
+    		solvingStrategie[number] = true;
+    	}
+    }
+    
+    /*
+     * Liste der Coordinaten in denen ein Value gefunden wurde
+     * es wird ein Tripple int abgelegt.
+     * [0] coordiante
+     * [1] Value
+     * [2] solvedBy
+     */
+    private LinkedList<logEntrySolving> coordiantesOfCellWhereValueWasSet = new LinkedList<logEntrySolving>();
+    public LinkedList<logEntrySolving> getChangedCells(){
+    	LinkedList<logEntrySolving> returnList = coordiantesOfCellWhereValueWasSet;
+    	return returnList;
+    }
     
 	// booelan sollen die cellen.candats resettet und neu berechnet werden?
 	// wichtig beim Löschen eines Wertes.
@@ -79,8 +127,8 @@ public class SudokuModel  {
      */
 	public void startSudoku() {
 		initSudoku();
-		createSudoku();
-		createStringWithFilledSudoku();
+		initLoadSudoku();
+		initRhsPaneText();
 	}
 	
 	/*
@@ -122,7 +170,7 @@ public class SudokuModel  {
 	/*
 	 * Hole das Sudoku aus dem Datenspeicher
 	 */
-	private void createSudoku(){
+	private void initLoadSudoku(){
 		// setCellValue ( int Value, boolean IsSolved, int IsSolvedBy)
 		//	IsSolvedBy 	1 = Vorgabe / default
 		// 	IsSolvedBy	2 = manuelle Eingabe
@@ -138,7 +186,7 @@ public class SudokuModel  {
 	/*
 	 * Erzeuge den Ersten Eintrag in rhsPaneText 
 	 */
-	public void createStringWithFilledSudoku(){
+	public void initRhsPaneText(){
 		String SudokuHilfe = "<table Border=1  >";
 		for (int row = 1; row<= jsudokuSolver.MAXROW; row++) {
 			SudokuHilfe = SudokuHilfe + "<tr>";
@@ -156,82 +204,219 @@ public class SudokuModel  {
 		SudokuHilfe = SudokuHilfe + "</table>";
 		rhsPaneText = SudokuHilfe;
 	}
+	
 	/*
-	 * /////////////////// ENDE INIT Methoden
+	 * gehört zu den Init Methoden,
+	 * aus dem geladenem Spiel wird ein Array aus Zahlen und leer = 0, damit die _view die InputFieldVlaue setzen kann 
+	 */
+	public String[] getSudokuAsStringArray() {
+		String[] sudokuInputFieldValue = new String[(jsudokuSolver.MAXROW * jsudokuSolver.MAXCOL) + 2];
+		int GridCount = 0;
+		for (int row = 1; row<= jsudokuSolver.MAXROW; row++) {
+			for (int col = 1; col<= jsudokuSolver.MAXCOL; col++) {
+				int CellValueAsInt = cell.get(""+row+col).getCellValue();
+				GridCount++;
+				sudokuInputFieldValue[GridCount] = "0";
+				if ( CellValueAsInt != 0) { 
+					sudokuInputFieldValue[GridCount] = ""+cell.get(""+row+col).getCellValue();
+				}
+			}
+		}
+		return sudokuInputFieldValue;
+	}
+	
+	
+	/*
+	 * ////////////////////////////////////////////////////////////////
+	 * //////
+	 * //////					ENDE INIT Methoden
+	 * //////
+	 * ////////////////////////////////////////////////////////////////
 	 */
 	
-
+	
 	/*
-	 * berechne die Candidaten, lösche Zahlen aus den Listen die nicht in der Zelle sein können.
-	 * Welche Zellen sind noch nicht gelöst
+	 * Setzte den Value in die Zelle [coordinate]
+	 * Logge das Ergebnis in logSudokuSteps
+	 * speichere das Tripple in coordiantesOfCellWhereValueWasSet
 	 */
+	//public LinkedList<int[]> trySetValueInCell (String coordinate, int value, int isSolvedBy){
+	public boolean trySetValueInCell (String coordinate, int value, int isSolvedBy){
+		//LinkedList<int[]> returnList = new LinkedList<int[]>();
+
+		//ArrayList<int[]> returnList = new ArrayList<int[]>();
+		ArrayList<String> errorList = new ArrayList<String>();
+		boolean iCanSetValue = true;
+		// ist die Zahl erlaubt?
+		if (value < 1 || value > jsudokuSolver.MAXNUMBER) {
+			iCanSetValue = false;
+			errorList.add("nichterlaubter Value!");
+		}
+		// ist die Zelle leer?
+		if (cell.get(coordinate).getIsSolved() == true) {
+			iCanSetValue = false;
+			errorList.add("Die Zelle is nicht leer!");
+		}
+		// passt Value in Units
+		if (testValueInUnits(coordinate,value) == false) {
+			iCanSetValue = false;
+			errorList.add("Der Value passt nicht in die Units!");
+		}
+		if (iCanSetValue == true) {
+			// schreibe einen Logeintrag
+			logSolvingSteps.add(new logEntrySolving(getCoordinateStringWithSlashFromCoordinate(coordinate), value, isSolvedBy) );
+			// setzte den Value
+			setValueInCell(coordinate, value, isSolvedBy);
+			//fülle den Speicher.
+			coordiantesOfCellWhereValueWasSet.add(new logEntrySolving(coordinate, value, isSolvedBy));
+			/*
+			int setCellDouble[] = new int[2];
+			setCellDouble[0] = cell.get(coordinate).getGridnumber();
+			setCellDouble[1] = value;
+			returnList.add(setCellDouble);
+			*/
+		} else {
+			//LogEntryError(String coor, int val, int isSolved, String errortext,   ArrayList<String> errorlist)
+			logError.add(new LogEntryError(coordinate,value, isSolvedBy, "Einsetzen", errorList));
+		}
+//		System.out.println("Model: trySetValueInCell - Setze Value " + value + " in Zelle [" + getCoordinateStringWithSlashFromCoordinate(coordinate) + "]");
+//		System.out.println("Model: trySetValueInCell - iCanSetValue " + iCanSetValue);
+//		for (int i = 0; i < errorList.size(); i++){
+//			System.out.println("Model: trySetValueInCell - ErrorTest ["+i+"] - " + errorList.get(i));
+//		}
+//		return returnList;
+		return iCanSetValue;
+	}
+	/*
+	 * Setzte Value in Zelle
+	 * Hilfsmethode zu trySetValueInCell
+	 */
+	private void setValueInCell(String coordinate, int value, int isSolvedBy){
+		// Hier bin ich wenn coordinate, value und isSolvedBy passen.
+		// setze das alles in die Zelle
+		cell.get(coordinate).setCellValue(value, true, isSolvedBy);
+		getValueAndSetValueInMyUnitsAsNotPossible(coordinate);
+		
+		if (setSudokuGameIsSolved() == true){			
+			logSolvingSteps.add(new logEntrySolving("0/0", value, sudokuSolved) );
+		}		
+		//System.out.println("Model: setCellValue - Setze Value " + value + " in Zelle [" + getCoordinateStringWithSlashFromCoordinate(coordinate) + "]");
+	}
+	/*
+	 * prüfe ob der Value in die Units gesetzt werden darf.
+	 */
+	private boolean testValueInUnits(String coordinate, int value){
+		boolean returnBoolean = true;
+		//hole alle Koordinaten der Value
+		String[] myUnits = cell.get(coordinate).getMyUnits();
+		
+		for (int i = 0; i< (myUnits.length); i++) {  
+			if (cell.get(myUnits[i]).getIsSolved() == true){
+				if (value == cell.get(myUnits[i]).getCellValue()){
+					returnBoolean = false;
+					return returnBoolean;
+				}
+			}
+		}
+		//System.out.println("Model: testValueInUnits - returnBoolean = " + returnBoolean);
+		return returnBoolean;
+	}
+	/*
+	 * Schicke das logSudokuSteps auf die Console
+	 */
+	public void printLog() {
+		System.out.println(" LogSudokuStep -> " );
+		for (int i = 0; i < logSolvingSteps.size() -1; i++) {
+			System.out.println("Model: - printLog - Step " + i + " " + logSolvingSteps.get(i).getAll()); 
+		}
+	}
+	public void printErrorLog() {
+		System.out.println(" ErrorLog -> " );
+		for (int i = 0; i < logError.size(); i++) {
+			System.out.println("Model: - ErrorLog - Step " + i + " " + logError.get(i).getAll()); 
+		}
+	}
+	
+	/*
+	 * ////////////////////////////////////////////////////////////////
+	 * //////
+	 * //////					ENDE Setze Value in Zelle
+	 * //////
+	 * ////////////////////////////////////////////////////////////////
+	 */	
+	
+	
+	/*
+	 * berechne die Candidaten und notPossibleValue
+	 */
+	private void resetCandidates(){
+		setResetCandidates = true;
+		for (int row = 1; row<= jsudokuSolver.MAXROW; row++) {
+			for (int col = 1; col<= jsudokuSolver.MAXCOL; col++) {
+				cell.get(""+row+col).resetCandidates();
+			}
+		}
+		setResetCandidates = false;
+	}
+	
 	public void createListOfCandidatesInAllCells(){
-		/* durchlaufe alle Zellen
+		/* 
+		 * durchlaufe alle Zellen
 		 * ist die Celle gelöst IsSolved = true, lösche diese Zahl in allen Unit
-		 * ist eine Zahl gesetzt, so lösche dies in 
 		 * COL, ROW, BLOCK
 		 */
 		if (setResetCandidates == true){
-			for (int row = 1; row<= jsudokuSolver.MAXROW; row++) {
-				for (int col = 1; col<= jsudokuSolver.MAXCOL; col++) {
-					cell.get(""+row+col).resetCandidates();
-				}
-			}
+			resetCandidates();
 		}
 		for (int row = 1; row<= jsudokuSolver.MAXROW; row++) {
 			for (int col = 1; col<= jsudokuSolver.MAXCOL; col++) {
 				if (cell.get(""+row+col).getIsSolved() == true) {
-					createListCandidatesInCell(row, col);
+					getValueAndSetValueInMyUnitsAsNotPossible(""+row+col);
 				}
 			}
 		}
 	}
+	
 	/*
 	 * Hilfsmethode dazu
 	 * berechne die Candidaten, lösche Zahlen aus den Listen die nicht in der Zelle sein können.
 	 */
-	private void createListCandidatesInCell(int row, int col){
-		/* durchlaufe alle Zellen
-		 * ist eine Zahl gesetzt, so lösche dies in 
-		 * COL, ROW, BLOCK
+	private void getValueAndSetValueInMyUnitsAsNotPossible(String coordinate){
+		/* 
+		 * setze ín MyUnits den Value als notPossible
 		 */
-		int Value = cell.get(""+row+col).getCellValue();
-		//hole MyRow
-		String[] MyRow = cell.get(""+row+col).getMyROW();
-		for (int i = 1; i< (MyRow.length) - 1; i++) {
-			testValueInCellAndSetNotPossibleValue(MyRow[i], Value);
-		}
-		//hole MyCol
-		String[] MyCol = cell.get(""+row+col).getMyCOL();
-		for (int i = 1; i< (MyCol.length) - 1; i++) {
-			testValueInCellAndSetNotPossibleValue(MyCol[i], Value);
-		}
-		//hole MyBlock
-		String[] MyBlock = cell.get(""+row+col).getMyBLOCK();
-		for (int i = 1; i< (MyBlock.length) - 1; i++) {
-			testValueInCellAndSetNotPossibleValue(MyBlock[i], Value);
+		int value = cell.get(coordinate).getCellValue();
+		String[] myUnits = cell.get(coordinate).getMyUnits();
+		//System.out.println("Model: getValueAndsetValueInMyUnitsAsNotPossible - myUnits.length = " + myUnits.length );
+		for (int i = 0; i< (myUnits.length); i++) {  
+			//System.out.println("Model: getValueAndsetValueInMyUnitsAsNotPossible - myUnits = " + myUnits[i]);
+			isCellUnsolvedSetValueAsNotPossible(myUnits[i], value);
 		}
 	}
 	/*
 	 * Hilfsmethode dazu
 	 * berechne die Candidaten, lösche Zahlen aus den Listen die nicht in der Zelle sein können.
 	 */
-	private boolean testValueInCellAndSetNotPossibleValue(String CellKoordiante, int Number ){
-		boolean returnvalue = false;
-		if (cell.get(CellKoordiante).getIsSolved() == false) {
-			cell.get(CellKoordiante).setNotPossibleValue(Number);
-			returnvalue = true;
-			//System.out.println("Model: testValueInCellAndSetNotPossibleValue - Die Zelle [" + CellKoordiante + "] ist nicht gelöst, lösche die Nummer " + Number);
+	private void  isCellUnsolvedSetValueAsNotPossible(String cellCoordinate, int Number ){
+		if (cell.get(cellCoordinate).getIsSolved() == false) {
+			cell.get(cellCoordinate).setNotPossibleValue(Number);
 		}
-		//System.out.println(" Ende TestNumberAndClear!");
-		return returnvalue;
 	}
-    
+	
+	/*
+	 * ////////////////////////////////////////////////////////////////
+	 * //////
+	 * //////					ENDE Candidates
+	 * //////
+	 * ////////////////////////////////////////////////////////////////
+	 */		
+
+	
 	
 	/*
 	 * Fülle rhsText mit einer Tabelle der Candidates
 	 */
-	public void createStringWithCandidatesInCell(){
+	public void createRhsPaneTextWithCandidatesInCell(){
 		createListOfCandidatesInAllCells();
 		//createListOfCandidatesInAllCells();
 		String SudokuHilfe = "<table Border=1 >";
@@ -247,28 +432,45 @@ public class SudokuModel  {
 		rhsPaneText = SudokuHilfe;
 	}
 
+	// Generiere rhsPaneTExt mit den Infos zum gelösten Spiel
+	public void setrhsPaneForGameIsSolved(){
+		String SudokuHilfe ="Du hast das Sudoku in " + logSolvingSteps.size() + " Zügen gelöst.<table>" + 
+					"<tr><th>Schritte</th><th>Zelle</th><th>Wert</th><th>Wer?</th></tr>";
+		String[] solvingSteps = new String[3];
+		for (int i = 0; i< logSolvingSteps.size() - 1; i++) {
+			solvingSteps = logSolvingSteps.get(i).getSolvingStepTripple();
+			int isolvedByText = Integer.parseInt(solvingSteps[2]);
+			String thisSolvingText = solvedByText[isolvedByText];
+			if (isolvedByText == 99) {
+				thisSolvingText = "Ende";
+			}
+			SudokuHilfe = SudokuHilfe + "<tr><td>" + i + "</td><td> " + solvingSteps[0] + "</td>" + 
+					"<td>" + solvingSteps[1] + "</td><td>" + thisSolvingText + "</td></tr>";
+		}
+		SudokuHilfe = SudokuHilfe + "</table>";
+		rhsPaneText = SudokuHilfe;	
+	}
 	
+	/*
+	 * hole den rhsPaneText
+	 */
 	public String getRhsPaneText(){
 		return rhsPaneText;
 	}
-	public String[] getSudokuAsStringArray() {
-		String[] sudokuInputFieldValue = new String[(jsudokuSolver.MAXROW * jsudokuSolver.MAXCOL) + 2];
-		int GridCount = 0;
-		for (int row = 1; row<= jsudokuSolver.MAXROW; row++) {
-			for (int col = 1; col<= jsudokuSolver.MAXCOL; col++) {
-				int CellValueAsInt = cell.get(""+row+col).getCellValue();
-				GridCount++;
-				sudokuInputFieldValue[GridCount] = "0";
-				if ( CellValueAsInt != 0) { 
-					sudokuInputFieldValue[GridCount] = ""+cell.get(""+row+col).getCellValue();
-				}
-				//ystem.out.println("getSudokuAsStringArray - GridCount: " + GridCount + " Value = |" + CellValueAsInt + "|");
-			}
-		}
-		return sudokuInputFieldValue;
-	}
 	
-	// Mache aus Gridnummer eine ROS, COL oder Koordinate 
+
+	/*
+	 * ////////////////////////////////////////////////////////////////
+	 * //////
+	 * //////					ENDE rhsPaneText
+	 * //////
+	 * ////////////////////////////////////////////////////////////////
+	 */	
+	
+	
+	/*
+	 * 	Mache aus Gridnummer eine ROW, COL oder Koordinate 
+	 */
 	private int getRowFromNumber( int Number){
 		int row = getCoordinateByNumber(Number)[0];
     	return row;
@@ -292,123 +494,19 @@ public class SudokuModel  {
 	}
 	private String getCoordinateStringWithSlashFromCoordinate(String coordinate){
 		String returnString = cell.get(coordinate).getCoordinateWithSlash();		
-		return returnString;
-	}
+		return returnString;		
+	}	
+		
 	/*
-	 * Teste ob der Value in die Zelle passt.
-	 * Es gibt keinen Value in Unit ROW, COL und BLOCK
-	 */
-	public boolean testAndSetValue(int gridNumber, int value, int isSolvedBy){
-		boolean testAndSet = false;
-		int row = getRowFromNumber(gridNumber);
-		int col = getColFromNumber(gridNumber);
-		String coordinate = ""+row+col;
-		//System.out.println("Model: testAndSetValue: - Teste Value: " + value + " in Zelle " + gridNumber + " [" + row + "/" + col + "]");
-		if (cell.get(coordinate).getIsSolved() == false) {
-			//Test kann die Zahl in die Reihe, die Spalte und Block engesetzt werden?
-			if (testValueInUnit("all", coordinate, value) == true) {
-				setCellValue(coordinate, value, isSolvedBy);
-				testAndSet = true;
-			}
-		}		
-		return testAndSet;
-	}
-	/*
-	 * Hilfsmethode zu testAndSetValue
-	 */
-	private boolean testValueInUnit(String unit, String coordinate, int value){
-		boolean allIsOK = true;
-		ArrayList<String> unitCoordinate = new ArrayList<>();
-		switch (unit) {
-        case "all": 
-        case "row": 
-        case "col":  
-        case "block":  
-        	String[] rowCoordinate = cell.get(coordinate).getMyROW();
-        	String[] colCoordinate = cell.get(coordinate).getMyCOL();
-        	String[] blockCoordinate = cell.get(coordinate).getMyBLOCK();        	
-        	for (int i = 1 ; i < (rowCoordinate.length -1); i++){
-        		if (unit.equals("all") || unit.equals("row")) {
-	        		if (cell.get(rowCoordinate[i]).getIsSolved() == true){
-	        			unitCoordinate.add(rowCoordinate[i]);
-	        		}
-        		}
-        		if (unit.equals("all") || unit.equals("col")) {
-    	        	if (cell.get(colCoordinate[i]).getIsSolved() == true){
-	        			unitCoordinate.add(colCoordinate[i]);
-	        		}
-        		}
-   	        	if (unit.equals("all") || unit.equals("block")) {
-   	        		if (cell.get(blockCoordinate[i]).getIsSolved() == true){
-	        			unitCoordinate.add(blockCoordinate[i]);
-	        		}
-   	        	}
-        	}
-        	allIsOK = testThisValueInCoordinateList(value, unitCoordinate);
-            break;
-            
-        default: allIsOK = false;;
-            break;
-		}
-		return allIsOK;
-	}
-	/*
-	 * Hilfsmethode zu testAndSetValue
-	 */
-	private boolean testThisValueInCoordinateList(int value, ArrayList<String> coordinateList){
-		// nur solved Cells sind in der Liste
-		boolean valueIsAllowed = true;
-		for (int i = 0; i < coordinateList.size(); i++){
-			if (value == cell.get(coordinateList.get(i)).getCellValue()){
-				valueIsAllowed = false;
-				System.out.println("testThisValueInCoordinateList - Der Value " + value + " ist in der Zelle " + coordinateList.get(i) + " schon gesetzt");
-			}
-		}
-		return valueIsAllowed;
-	}
-	/*
-	 * Setzte den Value in die Zelle [coordinate]
-	 * Logge das Ergebnis ind logSudokuSteps
-	 */
-	private void setCellValue(String coordinate, int value, int isSolvedBy){
-		//setValue ( int Value, boolean IsSolved, int IsSolvedBy)
-		cell.get(coordinate).setCellValue(value, true, isSolvedBy);
-		logSudokuSteps.add(new SudokoSolvingStep(getCoordinateStringWithSlashFromCoordinate(coordinate), value, isSolvedBy) );
-		if (setSudokuGameIsSolved() == true){			
-			logSudokuSteps.add(new SudokoSolvingStep("0/0", value, sudokuSolved) );
-		}		
-		System.out.println("setCellValue - Setze Value " + value + " in Zelle [" + coordinate + "]");
-		//printLog();
-	}
-	/*
-	 * Schicke das logSudokuSteps auf die Console
-	 */
-	public void printLog() {
-		System.out.println(" LogSudokuStep -> " );
-		for (int i = 0; i < logSudokuSteps.size(); i++) {
-			System.out.println("Model: - printLog - Step " + i + " " + logSudokuSteps.get(i).getAll()); 
-		}
-	}
+	 * ////////////////////////////////////////////////////////////////
+	 * //////
+	 * //////					ENDE umrechnungen GridNumber ->coordinate 
+	 * //////
+	 * ////////////////////////////////////////////////////////////////
+	 */	
 	
-	// Generiere rhsPaneTExt mit den Infos zum gelösten Spiel
-	public void setrhsPaneForGameIsSolved(){
-		String SudokuHilfe ="Du hast das Sudoku in " + logSudokuSteps.size() + " Zügen gelöst.<table>" + 
-					"<tr><th>Schritte</th><th>Zelle</th><th>Wert</th><th>Wer?</th></tr>";
-		String[] solvingSteps = new String[3];
-		for (int i = 0; i< logSudokuSteps.size() - 1; i++) {
-			solvingSteps = logSudokuSteps.get(i).getSolvingStepTripple();
-			int isolvedByText = Integer.parseInt(solvingSteps[2]);
-			String thisSolvingText = solvedByText[isolvedByText];
-			if (isolvedByText == 99) {
-				thisSolvingText = "Ende";
-			}
-			SudokuHilfe = SudokuHilfe + "<tr><td>" + i + "</td><td> " + solvingSteps[0] + "</td>" + 
-					"<td>" + solvingSteps[1] + "</td><td>" + thisSolvingText + "</td></tr>";
-		}
-		SudokuHilfe = SudokuHilfe + "</table>";
-		rhsPaneText = SudokuHilfe;	
-		System.out.println("Model: - setSudokuGameIsSolved - " + rhsPaneText);
-	}
+	
+
 	// Welche Zellen sind noch ungelöst
 	private ArrayList<String> getUnsolvedCell(){
 		ArrayList<String> coordinates = new ArrayList<>();
@@ -422,11 +520,11 @@ public class SudokuModel  {
 		//System.out.println("Model: - getUnsolvedCell - " + coordinates.size());
 		return coordinates;
 	}
+	
 	// Ist die Zelle eine Given, d.h. sei wurde beim Start initialisert oder nicht?
 	public boolean isGivenOrDeleteCellValue(int gridNumber){
 		boolean returnboolean = true;
 		if ( cell.get(getCoordinateStringByNumber(gridNumber)).getIsSolvedBy() == 1) {
-
 			returnboolean = false;
 		} else {
 			cell.get(getCoordinateStringByNumber(gridNumber)).reset();
@@ -434,38 +532,228 @@ public class SudokuModel  {
 		}
 		return returnboolean;
 	}
-	private void resetCandidates(){
-		setResetCandidates = true;
-		createStringWithCandidatesInCell();
-		setResetCandidates = false;
+
+
+	
+	
+	
+	/*
+	 * autoSolving
+	 */
+	public LinkedList<int[]> autoSolving(){
+		//public ArrayList<int[]> autoSolving(){
+		//ArrayList<int[]> returnList = new ArrayList<int[]>();
+		LinkedList<int[]> returnList = new LinkedList<int[]>();
+		int oldValueUnsolvedCells = 1000; 	// egal, hauptsache groß
+		int unsolvedCells = 999;			// egal, hauptsache kleiner
+		ArrayList<String> coordinates;
+		// initial Candidatenliste anlegen
+		createListOfCandidatesInAllCells();
+		//resetCandidates();
+		String cellCoordinate = "";
+		int counter = 0;
+		ArrayList<String> testCoordinates = getUnsolvedCell();
+		while (oldValueUnsolvedCells > unsolvedCells) {
+			coordinates = getUnsolvedCell();
+			testCoordinates = getUnsolvedCell();
+			counter++;
+			int returnListSize = 0;
+			int i = -1;
+			while (!testCoordinates.isEmpty()) {
+			//for (int i = 0; i < coordinates.size(); i++){
+				if (!testCoordinates.isEmpty()) {
+					cellCoordinate = testCoordinates.remove(0);
+				}
+				i++;
+				//if (returnList.size() >= returnListSize) {
+				//	cellCoordinate = coordinates.remove(0);
+				//}
+				//System.out.println("Model: for-Shleife   - " + i +" coordinates " + coordinates.get(i));
+				//System.out.println("Model: while-Shleife - " + i +" coordinates " + cellCoordinate);
+				
+				// solvingStrategie[3] -> naked single
+				if (solvingStrategie[3]  == true) {
+					System.out.println("Model: vergleich der Koordinaten - " + i +" for: " + coordinates.get(i)+ " while: " + cellCoordinate);
+					//returnList.addAll(findNakedSingle(coordinates.get(i)));
+					returnListSize = returnList.size();
+					if (findNakedSingle(cellCoordinate) == true) {
+						
+					}
+					//returnList.addAll(findNakedSingle(cellCoordinate));					
+				}
+				/*
+				// solvingStrategie[4] -> hidden single
+				if (solvingStrategie[4]  == true) {
+					returnList.addAll(findHiddenSingle(cellCoordinate));		
+//					returnList.addAll(findHiddenSingle(coordinates.get(i)));
+				}
+				*/
+			}
+			oldValueUnsolvedCells = unsolvedCells;
+			unsolvedCells = coordinates.size();
+			System.out.println("Model: While-Schleife - " + counter + " oldValueUnsolvedCells = " +oldValueUnsolvedCells + 
+					" unsolvedCells = " +unsolvedCells);	
+		}
+		return returnList;
 	}
 	/*
 	 * Methoden - findNakedSingle
 	 */
-	public ArrayList<int[]> findNakedSingle(){
-		ArrayList<int[]> returnList = new ArrayList<int[]>();
-		resetCandidates();
-		// hole alle ungelösten Zellen
-		ArrayList<String> coordinates = getUnsolvedCell();
+	public boolean findNakedSingle(String coordinate){
+		boolean returnBoolean = false; // nichts gefunden
 		ArrayList<Integer> cellCandidates;
-		// durchlaufe sie und suche nach der, in der nur ein Candidate steht.
-		for (int i = 0; i < coordinates.size(); i++){
-			cellCandidates = cell.get(coordinates.get(i)).getCandidates();
-			//System.out.println("Model: - findNakedSingle - List of unsolved Cells |" + coordinates.get(i) + "| Anzahl der Candidates; " + cellCandidates.size());
-			if (cellCandidates.size()== 1) {
-				int candidateValue = cellCandidates.get(0);
-				System.out.println("Model: - findNakedSingle - nur 1 Candidate in Cell |" + coordinates.get(i) + 
-						"| Zellenname: " + cell.get(coordinates.get(i)).getName() + " Wert: "  + candidateValue);// +
-						//" Candidates: " + cellCandidates.get(i));
-				//  IsSolvedBy	3 = naked single
-				//setCellValue(String coordinate, int value, int isSolvedBy)
-				int setCellDouble[] = new int[2];
-				setCellDouble[0] = cell.get(coordinates.get(i)).getGridnumber();
-				setCellDouble[1] = candidateValue;
-				setCellValue(coordinates.get(i),candidateValue, 3);
-				returnList.add(setCellDouble);
-			}
+		cellCandidates = cell.get(coordinate).getCandidates();
+		int solvedBy = 3; // nakedSingle
+		if (cellCandidates.size()== 1) {
+			// public ArrayList<int[]> trySetValueInCell (String coordinate, int value, int isSolvedBy	
+			returnBoolean = trySetValueInCell (coordinate, cellCandidates.get(0), solvedBy);
+		}
+		return returnBoolean;
+	}
+	public LinkedList<int[]> findNakedSingle_old(String coordinate){
+	//public ArrayList<int[]> findNakedSingle(String coordinate){
+		LinkedList<int[]> returnList = new LinkedList<int[]>();
+		//ArrayList<int[]> returnList = new ArrayList<int[]>();
+		ArrayList<Integer> cellCandidates;
+		cellCandidates = cell.get(coordinate).getCandidates();
+		int solvedBy = 3; // nakedSingle
+		if (cellCandidates.size()== 1) {
+			// public ArrayList<int[]> trySetValueInCell (String coordinate, int value, int isSolvedBy	
+			//returnList = trySetValueInCell (coordinate, cellCandidates.get(0), solvedBy);
 		}
 		return returnList;
 	}
+	/*
+	 * Methoden - findNakedSingle
+	 */
+	/*
+	public LinkedList<int[]> findHiddenSingle(String coordinate){
+	//public ArrayList<int[]> findNakedSingle(String coordinate){
+		LinkedList<int[]> returnList = new LinkedList<int[]>();
+		//ArrayList<int[]> returnList = new ArrayList<int[]>();
+		ArrayList<Integer> cellCandidates;
+		cellCandidates = cell.get(coordinate).getCandidates();
+		int solvedBy = 3; // nakedSingle
+		if (cellCandidates.size()== 1) {
+			// public ArrayList<int[]> trySetValueInCell (String coordinate, int value, int isSolvedBy	
+			returnList = trySetValueInCell (coordinate, cellCandidates.get(0), solvedBy);
+		}
+		return returnList;
+	}
+	*/
 }
+
+/*
+public ArrayList<int[]> findNakedSingle_old(){
+	ArrayList<int[]> returnList = new ArrayList<int[]>();
+	//resetCandidates();
+	// hole alle ungelösten Zellen
+	ArrayList<String> coordinates = getUnsolvedCell();
+	ArrayList<Integer> cellCandidates;
+	// durchlaufe sie und suche nach der, in der nur ein Candidate steht.
+	for (int i = 0; i < coordinates.size(); i++){
+		cellCandidates = cell.get(coordinates.get(i)).getCandidates();
+		//System.out.println("Model: - findNakedSingle - List of unsolved Cells |" + coordinates.get(i) + "| Anzahl der Candidates; " + cellCandidates.size());
+		if (cellCandidates.size()== 1) {
+			int candidateValue = cellCandidates.get(0);
+			System.out.println("Model: - findNakedSingle - nur 1 Candidate in Cell |" + coordinates.get(i) + 
+					"| Zellenname: " + cell.get(coordinates.get(i)).getName() + " Wert: "  + candidateValue);// +
+					//" Candidates: " + cellCandidates.get(i));
+			//  IsSolvedBy	3 = naked single
+			//setCellValue(String coordinate, int value, int isSolvedBy)
+			int setCellDouble[] = new int[2];
+			setCellDouble[0] = cell.get(coordinates.get(i)).getGridnumber();
+			setCellDouble[1] = candidateValue;
+			setValueInCell(coordinates.get(i),candidateValue, 3);
+			returnList.add(setCellDouble);
+		}
+	}
+	return returnList;
+}
+*/
+
+/*
+ *  ////////////////////////////////////////////////////////////////////////////////////////////////////////
+ */
+
+/*
+ * Teste ob der Value in die Zelle passt.
+ * Es gibt keinen Value in Unit ROW, COL und BLOCK
+ */
+/*
+public boolean testAndSetValue(int gridNumber, int value, int isSolvedBy){
+	boolean testAndSet = false;
+	int row = getRowFromNumber(gridNumber);
+	int col = getColFromNumber(gridNumber);
+	String coordinate = ""+row+col;
+	//System.out.println("Model: testAndSetValue: - Teste Value: " + value + " in Zelle " + gridNumber + " [" + row + "/" + col + "]");
+	if (cell.get(coordinate).getIsSolved() == false) {
+		//Test kann die Zahl in die Reihe, die Spalte und Block engesetzt werden?
+		if (testValueInUnit("all", coordinate, value) == true) {
+			setValueInCell(coordinate, value, isSolvedBy);
+			testAndSet = true;
+		}
+	}		
+	return testAndSet;
+}
+*/
+/*
+ * Hilfsmethode zu testAndSetValue
+ */
+/*
+private boolean testValueInUnit(String unit, String coordinate, int value){
+	boolean allIsOK = true;
+	ArrayList<String> unitCoordinate = new ArrayList<>();
+	switch (unit) {
+    case "all": 
+    case "row": 
+    case "col":  
+    case "block":  
+    	String[] rowCoordinate = cell.get(coordinate).getMyROW();
+    	String[] colCoordinate = cell.get(coordinate).getMyCOL();
+    	String[] blockCoordinate = cell.get(coordinate).getMyBLOCK();        	
+    	for (int i = 1 ; i < (rowCoordinate.length -1); i++){
+    		if (unit.equals("all") || unit.equals("row")) {
+        		if (cell.get(rowCoordinate[i]).getIsSolved() == true){
+        			unitCoordinate.add(rowCoordinate[i]);
+        		}
+    		}
+    		if (unit.equals("all") || unit.equals("col")) {
+	        	if (cell.get(colCoordinate[i]).getIsSolved() == true){
+        			unitCoordinate.add(colCoordinate[i]);
+        		}
+    		}
+	        	if (unit.equals("all") || unit.equals("block")) {
+	        		if (cell.get(blockCoordinate[i]).getIsSolved() == true){
+        			unitCoordinate.add(blockCoordinate[i]);
+        		}
+	        	}
+    	}
+    	allIsOK = testThisValueInCoordinateList(value, unitCoordinate);
+        break;
+        
+    default: allIsOK = false;;
+        break;
+	}
+	return allIsOK;
+}
+*/
+/*
+ * Hilfsmethode zu testAndSetValue
+ */
+/*
+private boolean testThisValueInCoordinateList(int value, ArrayList<String> coordinateList){
+	// nur solved Cells sind in der Liste
+	boolean valueIsAllowed = true;
+	for (int i = 0; i < coordinateList.size(); i++){
+		if (value == cell.get(coordinateList.get(i)).getCellValue()){
+			valueIsAllowed = false;
+			System.out.println("testThisValueInCoordinateList - Der Value " + value + " ist in der Zelle " + coordinateList.get(i) + " schon gesetzt");
+		}
+	}
+	return valueIsAllowed;
+}
+*/
+/*
+ *  /////////////////////////////////////////////////////////////////////////////////////////////////////////
+ */

@@ -6,6 +6,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 
 
 
@@ -34,7 +35,8 @@ public class SudokuController {
 		// 	1	btn btnClearrhsPane
 		//	2	btn btnDeleteEntry
 		//	3	SudokuInputField[i].addPropertyChangeListener
-        // 	4	FindNakedSingle
+        //	4	autoSoving
+        // 	5	FindNakedSingle
         Arrays.fill(listenerIsActive, true);
         
         addListener();
@@ -60,18 +62,22 @@ public class SudokuController {
         this._view.setFilledSudokuGrid(new createStringWithFilledSudoku());		//btn btnClearrhsPane
         this._view.setbtnDeleteEntry(new deleteGridValue());					//btn btnDeleteEntry
         this._view.setChangeOnInputField(new changesOnInputfield());			//SudokuInputField[i].addPropertyChangeListener
-        this._view.setFindNakedSingle(new FindNakedSingle());					//FindNakedSingle
+        this._view.autoSolve(new autoSolving());								//autoSolving
+        this._view.setFindNakedSingle(new findNakedSingle());					//Find Naked Single
+        this._view.setHiddenNakedSingle(new findHiddenSingle());				//Find Hidden Single
+        
     }
     private void deactivateAllListener(){
     	Arrays.fill(listenerIsActive, false);
     }
     private void checkIfSudokuIsSolved(){
     	if (_model.getsudokuGameIsSolved() == true) {
-        	System.out.println("Das Sudoku ist gelöst! " +_model.getRhsPaneText() );
+        	System.out.println("Das Sudoku ist gelöst! " );
         	deactivateAllListener();
         	_model.setrhsPaneForGameIsSolved();
-        	_view.setLastrhsPaneText(_model.getRhsPaneText());
-        	
+        	//_model.printLog();
+        	//_model.printErrorLog();
+        	_view.setLastrhsPaneText(_model.getRhsPaneText());        	
         }
     }
     /**
@@ -93,7 +99,7 @@ public class SudokuController {
     class createStringWithCandidatesInCell implements ActionListener{
         public void actionPerformed(ActionEvent e) {
         	if (listenerIsActive[0] == true) {
-        		_model.createStringWithCandidatesInCell();
+        		_model.createRhsPaneTextWithCandidatesInCell();
         		_view.setrhsPaneText(_model.getRhsPaneText());
         	}
         }
@@ -106,7 +112,7 @@ public class SudokuController {
     class createStringWithFilledSudoku implements ActionListener{
         public void actionPerformed(ActionEvent e) {
         	if (listenerIsActive[1] == true) {
-        		_model.createStringWithFilledSudoku();
+        		_model.initRhsPaneText();
         		_view.setrhsPaneText(_model.getRhsPaneText());
         	}
         }
@@ -142,28 +148,65 @@ public class SudokuController {
 	            int[] InputEventTripple = _view.getInputEventTripple();
 	
 	        	System.out.println("Control: changesOnInputfield " + " GridNumber " + InputEventTripple[0] + " NewValue "  + InputEventTripple[1] + " solvedBy " + InputEventTripple[2]);
-	            boolean valueIsSetInCell = _model.testAndSetValue( InputEventTripple[0],InputEventTripple[1],InputEventTripple[2]);
-	            _view.inputEventValueIsSetInCell(valueIsSetInCell);
+	            //boolean valueIsSetInCell = _model.testAndSetValue( InputEventTripple[0],InputEventTripple[1],InputEventTripple[2]);
+	        	//_view.inputEventValueIsSetInCell(valueIsSetInCell);
+	        	String coordinate = _model.getCoordinateStringByNumber(InputEventTripple[0]);
+	        	int value = InputEventTripple[1];
+	        	int solvedBy = InputEventTripple[2];
+	        	//LinkedList<int[]>   eingetragen = _model.trySetValueInCell(coordinate, value, solvedBy);
+//	        	ArrayList<int[]>   eingetragen = _model.trySetValueInCell(coordinate, value, solvedBy);
+	            //_view.foundValueWithStrategie(eingetragen);
+	            _view.foundValueWithStrategie(_model.getChangedCells());
 	            checkIfSudokuIsSolved();
 	            
-	            System.out.println("Control: changesOnInputfield passt? " + valueIsSetInCell );
+	            //System.out.println("Control: changesOnInputfield passt? " + eingetragen.get(1) );
 	            //_view.setrhsPaneText(_model.getrhsText());
         	}
         }
     }
-    
     /*
-     * wurde der Button "FindNakedSingle" gedrückt, 
+     * wurde der Button "autosolving" gedrückt, 
      * durchlaufe alles unsolved Cell und suche die in der er nur einen Candidate gibt.
      */
-    class FindNakedSingle implements ActionListener{
+    class autoSolving implements ActionListener{
         public void actionPerformed(ActionEvent e) {
         	if (listenerIsActive[4] == true) {
-	        	System.out.println("Control: FindNakedSingle ");
-	        	ArrayList<int[]>   nakedSingleValueList = _model.findNakedSingle();
-	            _view.foundNakedSingle(nakedSingleValueList);
+        		final long timeStart = System.currentTimeMillis(); 
+	        	System.out.println("Control: autoSolving ");
+	        	LinkedList<int[]>   autoSolvingValueList = _model.autoSolving();
+	        	// rufe autosoving auf
+	        	// hole die Liste der gelösten Zellen und übergebe sie _view
+	        	
+	            long timeEnd = System.currentTimeMillis(); 
+	            System.out.println("Laufszeit des Autosovers: " + (timeEnd - timeStart) + " Millisek."); 
+	            //_view.foundValueWithStrategie(autoSolvingValueList);
+	            _view.foundValueWithStrategie(_model.getChangedCells());
+	            timeEnd = System.currentTimeMillis(); 
+	            System.out.println("Laufszeit des Autosovers + _view: " + (timeEnd - timeStart) + " Millisek."); 
 	            checkIfSudokuIsSolved();
+	            timeEnd = System.currentTimeMillis(); 
+	            System.out.println("Laufszeit des Autosovers + _view + testGameEnde: " + (timeEnd - timeStart) + " Millisek."); 
         	}
+        }
+    }
+    /*
+     * wurde der Button "FindNakedSingle" gedrückt, 
+     * aktiviere diese Methode
+     */
+    class findNakedSingle implements ActionListener{
+        public void actionPerformed(ActionEvent e) {
+        	// 3 - Naked Single
+        	_model.changeSolvingStrategie(3);
+        }
+    }
+    /*
+     * wurde der Button "FindNakedSingle" gedrückt, 
+     * aktiviere diese Methode
+     */
+    class findHiddenSingle implements ActionListener{
+        public void actionPerformed(ActionEvent e) {
+        	// 4 - Hidden Single
+        	_model.changeSolvingStrategie(4);
         }
     }
 }

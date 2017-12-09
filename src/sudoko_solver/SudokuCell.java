@@ -18,10 +18,13 @@ public class SudokuCell {
 	private boolean[] notPossibleValues = {true,false,false,false,false,false,false,false,false,false};
 	private int row = 0;
 	private int col = 0;
-	private String[] myROW = new String[11];
-	private String[] myCOL = new String[11];
-	private String[] myBLOCK = new String[11];
-	
+	private int gridNumber = 0;
+	private String coordiateWithSlash = "";
+	private String[] myROW = new String[(jsudokuSolver.MAXNUMBER+2)]; // Array starten bei 0 meine Zahlen bei 1, 
+	private String[] myCOL = new String[(jsudokuSolver.MAXNUMBER+2)]; // und myRow, usw Schleife fragt kleine als
+	private String[] myBLOCK = new String[(jsudokuSolver.MAXNUMBER+2)];
+	private String[] myUnits = new String[3 * (jsudokuSolver.MAXNUMBER)];
+	private boolean myUnitsAreCreated = false;
 	
 	
 	public SudokuCell(int initRow, int initCol, int initValue, boolean initIsSolved, int initIsSolvedBy) {
@@ -40,6 +43,8 @@ public class SudokuCell {
 			cellName = "" + initRow + initCol;
 			row = initRow;
 			col = initCol;		
+			gridNumber =  ((row-1) * jsudokuSolver.MAXROW + col);
+			coordiateWithSlash = row + "/" +col;
 			//System.out.println("row = " + initRow + " col = " + initCol + " name = " + cellName);
 			value = initValue;
 			isSolved = initIsSolved;
@@ -121,6 +126,31 @@ public class SudokuCell {
 			myBLOCK[i] = BLOCK[i];
 		}
 	}
+	public String[] getMyUnits(){
+		if (myUnitsAreCreated == false){
+			myUnitsAreCreated = true;
+			int counter = 0;
+			for (int i = 1; i< myROW.length; i++) {
+				if (myROW[i] !=null) {
+					myUnits[counter] = myROW[i];
+					counter++;
+				}
+			}
+			for (int i = 1; i< myCOL.length; i++) {
+				if (myCOL[i] !=null) {
+					myUnits[counter] = myCOL[i];
+					counter++;
+				}
+			}
+			for (int i = 1; i< myBLOCK.length; i++) {
+				if (myBLOCK[i] !=null) {
+					myUnits[counter] = myBLOCK[i];
+					counter++;
+				}
+			}			
+		}
+		return myUnits;
+	}
 	public String[] getMyROW() { 
 		return Arrays.copyOf(myROW, myROW.length);
 	}
@@ -148,9 +178,9 @@ public class SudokuCell {
 		}
 	}
 	public String getCoordinateWithSlash(){
-		return row + "/" +col;
+		return coordiateWithSlash; // = row + "/" +col;
 	}
 	public int getGridnumber(){
-		return ((row-1) * jsudokuSolver.MAXROW + col);
+		return gridNumber; // ((row-1) * jsudokuSolver.MAXROW + col);
 	}
 }
