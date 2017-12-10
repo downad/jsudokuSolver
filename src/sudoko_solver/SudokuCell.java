@@ -178,9 +178,9 @@ public class SudokuCell {
 		}
 	}
 	public String getCoordinateWithSlash(){
-		return coordiateWithSlash; // = row + "/" +col;
+		return coordiateWithSlash; 
 	}
 	public int getGridnumber(){
-		return gridNumber; // ((row-1) * jsudokuSolver.MAXROW + col);
+		return gridNumber; 
 	}
 }

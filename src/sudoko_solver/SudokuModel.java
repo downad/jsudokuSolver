@@ -103,13 +103,31 @@ public class SudokuModel  {
     		solvingStrategie[number] = true;
     	}
     }
+    // Koodinatenspeicher
+    private ArrayList<String> coordinatsOfUnsolvedCells = new ArrayList<>();
+    private int indexOfCoordinatsOfUnsolvedCells = 0;
+    private void setIndexOfCoodinatesOfUnsolvedCells(){
+    	indexOfCoordinatsOfUnsolvedCells = 0;
+    }
+    private void incIndexOfCoordinatsOfUnsolvedCells() {
+    	// indexOfCoordinatsOfUnsolvedCells darf den Wert von coordiante..size() nicht überschreiten / erreichen 
+    	if (indexOfCoordinatsOfUnsolvedCells +1 < coordinatsOfUnsolvedCells.size() && getIndexOfCoordinatsOfUnsolvedCells() != -1){
+    		indexOfCoordinatsOfUnsolvedCells++;
+    	} else {
+    		indexOfCoordinatsOfUnsolvedCells = -1; // so lange ist der Array Nie!
+    	}
+    }
+    private int getIndexOfCoordinatsOfUnsolvedCells() {
+    	return indexOfCoordinatsOfUnsolvedCells;
+    }
+    
     
     /*
      * Liste der Coordinaten in denen ein Value gefunden wurde
-     * es wird ein Tripple int abgelegt.
-     * [0] coordiante
-     * [1] Value
-     * [2] solvedBy
+     * es wird ein Tripple abgelegt.
+     * String  coordiante -->evtl. mal überarbeiten auf GridNumber
+     * int Value
+     * int solvedBy
      */
     private LinkedList<logEntrySolving> coordiantesOfCellWhereValueWasSet = new LinkedList<logEntrySolving>();
     public LinkedList<logEntrySolving> getChangedCells(){
@@ -239,12 +257,9 @@ public class SudokuModel  {
 	 * Setzte den Value in die Zelle [coordinate]
 	 * Logge das Ergebnis in logSudokuSteps
 	 * speichere das Tripple in coordiantesOfCellWhereValueWasSet
+	 * bei erfolg return true
 	 */
-	//public LinkedList<int[]> trySetValueInCell (String coordinate, int value, int isSolvedBy){
 	public boolean trySetValueInCell (String coordinate, int value, int isSolvedBy){
-		//LinkedList<int[]> returnList = new LinkedList<int[]>();
-
-		//ArrayList<int[]> returnList = new ArrayList<int[]>();
 		ArrayList<String> errorList = new ArrayList<String>();
 		boolean iCanSetValue = true;
 		// ist die Zahl erlaubt?
@@ -269,22 +284,9 @@ public class SudokuModel  {
 			setValueInCell(coordinate, value, isSolvedBy);
 			//fülle den Speicher.
 			coordiantesOfCellWhereValueWasSet.add(new logEntrySolving(coordinate, value, isSolvedBy));
-			/*
-			int setCellDouble[] = new int[2];
-			setCellDouble[0] = cell.get(coordinate).getGridnumber();
-			setCellDouble[1] = value;
-			returnList.add(setCellDouble);
-			*/
 		} else {
-			//LogEntryError(String coor, int val, int isSolved, String errortext,   ArrayList<String> errorlist)
 			logError.add(new LogEntryError(coordinate,value, isSolvedBy, "Einsetzen", errorList));
 		}
-//		System.out.println("Model: trySetValueInCell - Setze Value " + value + " in Zelle [" + getCoordinateStringWithSlashFromCoordinate(coordinate) + "]");
-//		System.out.println("Model: trySetValueInCell - iCanSetValue " + iCanSetValue);
-//		for (int i = 0; i < errorList.size(); i++){
-//			System.out.println("Model: trySetValueInCell - ErrorTest ["+i+"] - " + errorList.get(i));
-//		}
-//		return returnList;
 		return iCanSetValue;
 	}
 	/*
@@ -471,6 +473,7 @@ public class SudokuModel  {
 	/*
 	 * 	Mache aus Gridnummer eine ROW, COL oder Koordinate 
 	 */
+	/*
 	private int getRowFromNumber( int Number){
 		int row = getCoordinateByNumber(Number)[0];
     	return row;
@@ -479,6 +482,7 @@ public class SudokuModel  {
 		int col = getCoordinateByNumber(Number)[1];
     	return col;
 	}
+	*/
 	public int[] getCoordinateByNumber(int Number){
 		int[] returnvalue= new int[2];
 		int row = ((Number - 1)/ jsudokuSolver.MAXCOL) + 1;
@@ -520,6 +524,17 @@ public class SudokuModel  {
 		//System.out.println("Model: - getUnsolvedCell - " + coordinates.size());
 		return coordinates;
 	}
+	private void setCoordinateOfUnsolvedCell(){
+		coordinatsOfUnsolvedCells = new ArrayList<>();
+		for (int row = 1; row<= jsudokuSolver.MAXROW; row++) {
+			for (int col = 1; col<= jsudokuSolver.MAXCOL; col++) {
+				if ( cell.get(""+row+col).getIsSolved() == false) { 
+					coordinatsOfUnsolvedCells.add(""+row+col);
+				}
+			}
+		}
+		setIndexOfCoodinatesOfUnsolvedCells();
+	}
 	
 	// Ist die Zelle eine Given, d.h. sei wurde beim Start initialisert oder nicht?
 	public boolean isGivenOrDeleteCellValue(int gridNumber){
@@ -540,76 +555,97 @@ public class SudokuModel  {
 	/*
 	 * autoSolving
 	 */
-	public LinkedList<int[]> autoSolving(){
-		//public ArrayList<int[]> autoSolving(){
-		//ArrayList<int[]> returnList = new ArrayList<int[]>();
-		LinkedList<int[]> returnList = new LinkedList<int[]>();
+	public boolean autoSolving(){
+		boolean returnBoolean = true; 		// alles OK
 		int oldValueUnsolvedCells = 1000; 	// egal, hauptsache groß
 		int unsolvedCells = 999;			// egal, hauptsache kleiner
-		ArrayList<String> coordinates;
+
+		ArrayList<String> coordinates;		// für die Coordinaten
+		
 		// initial Candidatenliste anlegen
 		createListOfCandidatesInAllCells();
-		//resetCandidates();
+		
 		String cellCoordinate = "";
-		int counter = 0;
-		ArrayList<String> testCoordinates = getUnsolvedCell();
+		int counter = 0;					// Für die Anzahl der Schleifen
+		boolean foundValue = true;			// hat die Strategie einen Value erzeugt?
 		while (oldValueUnsolvedCells > unsolvedCells) {
-			coordinates = getUnsolvedCell();
-			testCoordinates = getUnsolvedCell();
-			counter++;
-			int returnListSize = 0;
-			int i = -1;
-			while (!testCoordinates.isEmpty()) {
-			//for (int i = 0; i < coordinates.size(); i++){
-				if (!testCoordinates.isEmpty()) {
-					cellCoordinate = testCoordinates.remove(0);
-				}
-				i++;
-				//if (returnList.size() >= returnListSize) {
-				//	cellCoordinate = coordinates.remove(0);
-				//}
-				//System.out.println("Model: for-Shleife   - " + i +" coordinates " + coordinates.get(i));
-				//System.out.println("Model: while-Shleife - " + i +" coordinates " + cellCoordinate);
-				
-				// solvingStrategie[3] -> naked single
-				if (solvingStrategie[3]  == true) {
-					System.out.println("Model: vergleich der Koordinaten - " + i +" for: " + coordinates.get(i)+ " while: " + cellCoordinate);
-					//returnList.addAll(findNakedSingle(coordinates.get(i)));
-					returnListSize = returnList.size();
-					if (findNakedSingle(cellCoordinate) == true) {
-						
-					}
-					//returnList.addAll(findNakedSingle(cellCoordinate));					
+			setCoordinateOfUnsolvedCell();
+			foundValue = true; // damit der nächste While ein kein inc macht
+			
+			System.out.println("Model: zeige (nach setCoordinates..) CoodinatesOfUnsolvedCells.size " +  coordinatsOfUnsolvedCells.size());
+			System.out.println("Model: zeige (nach setCoordinates..) IndexOfCoodinatesOfUnsolvedCells " +  getIndexOfCoordinatsOfUnsolvedCells());
+
+			// berechne die Abbruchbedingung
+			oldValueUnsolvedCells = unsolvedCells;
+			unsolvedCells = coordinatsOfUnsolvedCells.size();
+			
+			counter++; // ein Zähler für die Schleifen
+
+
+			while (getIndexOfCoordinatsOfUnsolvedCells() != -1  && unsolvedCells > 0) {
+				if (foundValue == true) {
+					foundValue = false;			// hat die Strategie einen Value erzeugt?
+	
+				} else {
+					foundValue = false;
+					incIndexOfCoordinatsOfUnsolvedCells();
 				}
 				/*
-				// solvingStrategie[4] -> hidden single
-				if (solvingStrategie[4]  == true) {
-					returnList.addAll(findHiddenSingle(cellCoordinate));		
-//					returnList.addAll(findHiddenSingle(coordinates.get(i)));
+				if (getIndexOfCoordinatsOfUnsolvedCells()< 0) {
+					break;
 				}
 				*/
+				// solvingStrategie[3] -> naked single
+				if (solvingStrategie[3]  == true && getIndexOfCoordinatsOfUnsolvedCells() != -1) {
+					System.out.println("Model: hole Koordinaten " + getCoordianteOfUnsolvedCells(foundValue));
+					foundValue = findNakedSingle(getCoordianteOfUnsolvedCells(foundValue)); 
+					System.out.println("Model: foundValue = " + foundValue);
+					
+				}
+				// solvingStrategie[4] -> hidden single
+				if (solvingStrategie[4]  == true) {
+					//foundValue = findHiddenSingle(getCoordianteOfUnsolvedCells(foundValue));		
+				}
+			
 			}
-			oldValueUnsolvedCells = unsolvedCells;
-			unsolvedCells = coordinates.size();
 			System.out.println("Model: While-Schleife - " + counter + " oldValueUnsolvedCells = " +oldValueUnsolvedCells + 
 					" unsolvedCells = " +unsolvedCells);	
 		}
-		return returnList;
+		return returnBoolean; //returnList;
 	}
+	private String getCoordianteOfUnsolvedCells(boolean foundValue){
+		String returnString ="";
+		if (foundValue == true) {
+			incIndexOfCoordinatsOfUnsolvedCells(); 
+		}
+		int IndexOfCoordinatsOfUnsolvedCells = getIndexOfCoordinatsOfUnsolvedCells();
+		if (IndexOfCoordinatsOfUnsolvedCells < 0) {
+			returnString="";
+		} else {
+			System.out.println("Model: getCoordianteOfUnsolvedCells -  IndexOfCoodinatesOfUnsolvedCells " +  IndexOfCoordinatsOfUnsolvedCells);
+			returnString = coordinatsOfUnsolvedCells.get(IndexOfCoordinatsOfUnsolvedCells);
+		}
+		
+		return returnString;
+	}
+	
 	/*
 	 * Methoden - findNakedSingle
 	 */
 	public boolean findNakedSingle(String coordinate){
 		boolean returnBoolean = false; // nichts gefunden
 		ArrayList<Integer> cellCandidates;
-		cellCandidates = cell.get(coordinate).getCandidates();
-		int solvedBy = 3; // nakedSingle
-		if (cellCandidates.size()== 1) {
-			// public ArrayList<int[]> trySetValueInCell (String coordinate, int value, int isSolvedBy	
-			returnBoolean = trySetValueInCell (coordinate, cellCandidates.get(0), solvedBy);
+		if (coordinate.equals("") == false) {
+			cellCandidates = cell.get(coordinate).getCandidates();
+			int solvedBy = 3; // nakedSingle
+			if (cellCandidates.size()== 1) {
+				// public ArrayList<int[]> trySetValueInCell (String coordinate, int value, int isSolvedBy	
+				returnBoolean = trySetValueInCell (coordinate, cellCandidates.get(0), solvedBy);
+			}
 		}
 		return returnBoolean;
 	}
+	/*
 	public LinkedList<int[]> findNakedSingle_old(String coordinate){
 	//public ArrayList<int[]> findNakedSingle(String coordinate){
 		LinkedList<int[]> returnList = new LinkedList<int[]>();
@@ -623,6 +659,7 @@ public class SudokuModel  {
 		}
 		return returnList;
 	}
+	*/
 	/*
 	 * Methoden - findNakedSingle
 	 */

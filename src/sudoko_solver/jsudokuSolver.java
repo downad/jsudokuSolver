@@ -23,13 +23,14 @@ public class jsudokuSolver {
 	floor					Ein horizontales Band ist ein Stock (engl.: floor).
 	tower					Ein vertikales ist ein Turm (engl.: tower). 
 	
-	
-	05.12.2017 - Optimierungen 
-		Zeit [ms]:
-			Min			5388
-			Max			5609
-			Mittelwert	5440,45
-			Median		5427
+	Optimierungen jeweisl 10 Messungen
+	05.12.2017 - Optimierungen 			10.12.	Liste, Refresh, View
+		Zeit [ms]:							Zeit [ms]:
+			Min			5388					Min			157
+			Max			5609					Max			223
+			Mittelwert	5440,45					Mittelwert	174,64
+			Median		5427					Median		170
+
 
 
 	
@@ -47,6 +48,8 @@ public class jsudokuSolver {
      * Diese Klasse wird nur dazu benutzt alle nötigen
      * Komponenten zu Initialisieren und die erste
      * View anzuzeigen
+     * angelegt an
+     * http://blog.bigbasti.com/tutorial-model-view-controller-mvc-struktur-in-java-projekten-nutzen/
      */
     public static void main(String [] args) throws Exception {
         controller = new SudokuController();

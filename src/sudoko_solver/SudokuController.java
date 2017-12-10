@@ -4,9 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
 
 
 
@@ -36,10 +34,12 @@ public class SudokuController {
 		//	2	btn btnDeleteEntry
 		//	3	SudokuInputField[i].addPropertyChangeListener
         //	4	autoSoving
-        // 	5	FindNakedSingle
+        // die Checkboxen werden nicht berücksichtigt.
         Arrays.fill(listenerIsActive, true);
         
+        // baue alle Listener ein
         addListener();
+        // Starte das Sudoku, erzeuge den 1. rhsPaneText und übergebe ihn an die View
         _model.startSudoku();
         _view.setrhsPaneText(_model.getRhsPaneText());
         _view.setSudokuInputFieldValue(_model.getSudokuAsStringArray());
@@ -67,9 +67,18 @@ public class SudokuController {
         this._view.setHiddenNakedSingle(new findHiddenSingle());				//Find Hidden Single
         
     }
+    /*
+     *  deaktivier die Listener
+     *  z.B. weil das Sudoku gelöst wurde
+     */
+    
     private void deactivateAllListener(){
     	Arrays.fill(listenerIsActive, false);
     }
+    
+    /*
+     * Ist das sudoku fertig?
+     */
     private void checkIfSudokuIsSolved(){
     	if (_model.getsudokuGameIsSolved() == true) {
         	System.out.println("Das Sudoku ist gelöst! " );
@@ -83,12 +92,6 @@ public class SudokuController {
     /**
      * Inneren Listener Klassen implementieren das Interface ActionListener
      *
-     * 1: Hier wird erst der eingegebene Wert aus der View geholt
-     * 2: Der Wert wird dem Model übergeben und die Wurzel berechnet
-     * 3: Die berechnete Wurzel wird aus dem Model geladen und
-     * 4: Wieder der View zum Darstellen übergeben
-     *
-     * ACHTUNG: Fehlerprüfung muss noch implementiert werden
      */
 
     /*
@@ -148,19 +151,23 @@ public class SudokuController {
 	            int[] InputEventTripple = _view.getInputEventTripple();
 	
 	        	System.out.println("Control: changesOnInputfield " + " GridNumber " + InputEventTripple[0] + " NewValue "  + InputEventTripple[1] + " solvedBy " + InputEventTripple[2]);
-	            //boolean valueIsSetInCell = _model.testAndSetValue( InputEventTripple[0],InputEventTripple[1],InputEventTripple[2]);
-	        	//_view.inputEventValueIsSetInCell(valueIsSetInCell);
+
 	        	String coordinate = _model.getCoordinateStringByNumber(InputEventTripple[0]);
 	        	int value = InputEventTripple[1];
 	        	int solvedBy = InputEventTripple[2];
-	        	//LinkedList<int[]>   eingetragen = _model.trySetValueInCell(coordinate, value, solvedBy);
-//	        	ArrayList<int[]>   eingetragen = _model.trySetValueInCell(coordinate, value, solvedBy);
-	            //_view.foundValueWithStrategie(eingetragen);
-	            _view.foundValueWithStrategie(_model.getChangedCells());
+	        	// trage das Tripple ein
+	        	boolean eingetragen = _model.trySetValueInCell(coordinate, value, solvedBy);
+	        	// hole die Liste der gelösten Zellen und übergebe sie _view
+	        	if (eingetragen == true) {
+	        		_view.foundValueWithStrategie(_model.getChangedCells());
+	        	}
+	            // ist das Sudoku fertig?
 	            checkIfSudokuIsSolved();
 	            
-	            //System.out.println("Control: changesOnInputfield passt? " + eingetragen.get(1) );
-	            //_view.setrhsPaneText(_model.getrhsText());
+	        	// Soll rhspaneTExt geändert werden?
+	        	// muss noch eingebaut werden
+	        	_model.createRhsPaneTextWithCandidatesInCell();
+	        	_view.setrhsPaneText(_model.getRhsPaneText());
         	}
         }
     }
@@ -173,25 +180,29 @@ public class SudokuController {
         	if (listenerIsActive[4] == true) {
         		final long timeStart = System.currentTimeMillis(); 
 	        	System.out.println("Control: autoSolving ");
-	        	LinkedList<int[]>   autoSolvingValueList = _model.autoSolving();
-	        	// rufe autosoving auf
-	        	// hole die Liste der gelösten Zellen und übergebe sie _view
-	        	
 	            long timeEnd = System.currentTimeMillis(); 
 	            System.out.println("Laufszeit des Autosovers: " + (timeEnd - timeStart) + " Millisek."); 
-	            //_view.foundValueWithStrategie(autoSolvingValueList);
-	            _view.foundValueWithStrategie(_model.getChangedCells());
-	            timeEnd = System.currentTimeMillis(); 
-	            System.out.println("Laufszeit des Autosovers + _view: " + (timeEnd - timeStart) + " Millisek."); 
+	        	
+	            // rufe autosoving auf
+	        	boolean autoSolving = _model.autoSolving();
+	        	// hole die Liste der gelösten Zellen und übergebe sie _view
+	        	if (autoSolving== true) {
+	        		_view.foundValueWithStrategie(_model.getChangedCells());
+
+	        		timeEnd = System.currentTimeMillis(); 
+	        		System.out.println("Laufszeit des Autosovers + _view: " + (timeEnd - timeStart) + " Millisek.");
+	        	}
+	            // ist das Sudoku fertig?
 	            checkIfSudokuIsSolved();
+	            
 	            timeEnd = System.currentTimeMillis(); 
 	            System.out.println("Laufszeit des Autosovers + _view + testGameEnde: " + (timeEnd - timeStart) + " Millisek."); 
         	}
         }
     }
     /*
-     * wurde der Button "FindNakedSingle" gedrückt, 
-     * aktiviere diese Methode
+     * wurde die CheckBox "NakedSingle" aktiviert/deaktiviert?, 
+     * ändere den Zustand der Methode
      */
     class findNakedSingle implements ActionListener{
         public void actionPerformed(ActionEvent e) {
@@ -200,8 +211,8 @@ public class SudokuController {
         }
     }
     /*
-     * wurde der Button "FindNakedSingle" gedrückt, 
-     * aktiviere diese Methode
+     * wurde die CheckBox "HiddenSingle" aktiviert/deaktiviert?, 
+     * ändere den Zustand der Methodee
      */
     class findHiddenSingle implements ActionListener{
         public void actionPerformed(ActionEvent e) {
