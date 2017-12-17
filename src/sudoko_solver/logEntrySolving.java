@@ -1,11 +1,14 @@
 package sudoko_solver;
 
+import java.util.ArrayList;
+
 public class logEntrySolving {
 	private String coordinate = "";
 	private int value = 0;
 	private int isSolvedBy = 0;
 	private String[] solvingTripple = new String[3];
 	private int gridNumber = 0;
+	private ArrayList<Integer> helperStrategie = new ArrayList<Integer>();
 	
 	public logEntrySolving(String coor, int val, int isSolved){
 		 coordinate = coor;
@@ -23,7 +26,14 @@ public class logEntrySolving {
 		 }		 
 	}
 	public String getAll() {
-		return ("SudokoSolvingStep - Die Zelle: " + coordinate + " wurde mit dem Wert " + value + " gelöst durch " + isSolvedBy);
+		String returnString = "";
+		if (helperStrategie.size()>0) {
+			for (int i = 0; i < helperStrategie.size(); i++) {
+				returnString = returnString + "<br>SudokoSolvingStep - Die Zelle: " + coordinate + " wurde durch die Strategie " + helperStrategie.get(i) + " vorbereitet";
+			}
+		}
+		returnString = returnString + "<br>SudokoSolvingStep - Die Zelle: " + coordinate + " wurde mit dem Wert " + value + " gelöst durch " + isSolvedBy;
+		return returnString;
 	}
 	public String[] getSolvingStepTripple() {
 		return solvingTripple;
@@ -36,5 +46,8 @@ public class logEntrySolving {
 	}
 	public int getGridNumber(){
 		return gridNumber;
+	}
+	public void setHelperStategie(int iHelperStrategie) {
+		helperStrategie.add(iHelperStrategie);
 	}
 }

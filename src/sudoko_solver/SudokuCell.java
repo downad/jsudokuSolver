@@ -14,15 +14,17 @@ public class SudokuCell {
 	private int value = 0;
 	private boolean isSolved = false;
 	private int isSolvedBy = 0;
-	private boolean[] Candidates = {true,true,true,true,true,true,true,true,true,true};
-	private boolean[] notPossibleValues = {true,false,false,false,false,false,false,false,false,false};
+	private boolean[] Candidates = new boolean[(jsudokuSolver.MAXNUMBER + 1 )]; //{true,true,true,true,true,true,true,true,true,true};
+	private boolean[] notPossibleValues = new boolean[(jsudokuSolver.MAXNUMBER + 1 )]; // {true,false,false,false,false,false,false,false,false,false};
+	// dieser boolean wird nicht resettet!
+	private boolean[] notPossibleValuesByStrategie = new boolean[(jsudokuSolver.MAXNUMBER + 1 )]; // {true,false,false,false,false,false,false,false,false,false};
 	private int row = 0;
 	private int col = 0;
 	private int gridNumber = 0;
 	private String coordiateWithSlash = "";
-	private String[] myROW = new String[(jsudokuSolver.MAXNUMBER+2)]; // Array starten bei 0 meine Zahlen bei 1, 
-	private String[] myCOL = new String[(jsudokuSolver.MAXNUMBER+2)]; // und myRow, usw Schleife fragt kleine als
-	private String[] myBLOCK = new String[(jsudokuSolver.MAXNUMBER+2)];
+	private String[] myROW = new String[(jsudokuSolver.MAXNUMBER)]; // Array starten bei 0 meine Zahlen bei 1, +2 weggemacht
+	private String[] myCOL = new String[(jsudokuSolver.MAXNUMBER)]; // und myRow, usw Schleife fragt kleine als
+	private String[] myBLOCK = new String[(jsudokuSolver.MAXNUMBER)];
 	private String[] myUnits = new String[3 * (jsudokuSolver.MAXNUMBER)];
 	private boolean myUnitsAreCreated = false;
 	
@@ -40,6 +42,12 @@ public class SudokuCell {
 			ValueCheckIsOK = false;
 		}
 		if (ValueCheckIsOK) {
+			// erzeuge die passenden Candiadten Liste
+			Arrays.fill(Candidates, true);
+			Arrays.fill(notPossibleValues, false);
+			notPossibleValues[0] = true;
+			Arrays.fill(notPossibleValuesByStrategie, false);
+			notPossibleValuesByStrategie[0] = true;
 			cellName = "" + initRow + initCol;
 			row = initRow;
 			col = initCol;		
@@ -72,10 +80,10 @@ public class SudokuCell {
 	public String getName(){
 		return cellName;
 	}
-	public void setCandidate(int Value) {
+	private void setCandidate(int Value) {
 		Candidates[Value] = true;
 	}
-	public void clearCandidate(int Value) {
+	private void clearCandidate(int Value) {
 		Candidates[Value] = false;
 		//System.out.println("SudokuCell: clearPossibleCellNumber: " + "lösche die Nummer " + Value);
 	}
@@ -111,11 +119,43 @@ public class SudokuCell {
 		returnstring = returnstring + "</table>";
 		return returnstring;
 	}
+	public String getCandidatesAsString() {
+		String returnstring ="";
+		for (int i = 1; i<= jsudokuSolver.MAXNUMBER; i++){
+			if (Candidates[i] == true ) {
+				returnstring = returnstring + String.valueOf(i) + " ";
+			}
+		}
+		return returnstring;
+	}
 	public void setMyROW( String[] ROW){
+		int counter = 0;
 		for (int i = 1; i< ROW.length; i++) {
-			myROW[i] = ROW[i];
+			if (ROW[i] !=null) {
+				myROW[counter] = ROW[i];
+				counter++;
+			}
 		}
 	}
+	public void setMyCOL( String[] COL){
+		int counter = 0;
+		for (int i = 1; i< COL.length; i++) {
+			if (COL[i] !=null) {
+				myCOL[counter] = COL[i];
+				counter++;
+			}
+		}
+	}
+	public void setMyBLOCK( String[] BLOCK){
+		int counter = 0;
+		for (int i = 1; i< BLOCK.length; i++) {
+			if (BLOCK[i] !=null) {
+				myBLOCK[counter] = BLOCK[i];
+				counter++;
+			}
+		}
+	}
+	/*
 	public void setMyCOL( String[] COL){
 		for (int i = 1; i< COL.length; i++) {
 			myCOL[i] = COL[i];
@@ -126,23 +166,24 @@ public class SudokuCell {
 			myBLOCK[i] = BLOCK[i];
 		}
 	}
+	*/
 	public String[] getMyUnits(){
 		if (myUnitsAreCreated == false){
 			myUnitsAreCreated = true;
 			int counter = 0;
-			for (int i = 1; i< myROW.length; i++) {
+			for (int i = 0; i< myROW.length; i++) {
 				if (myROW[i] !=null) {
 					myUnits[counter] = myROW[i];
 					counter++;
 				}
 			}
-			for (int i = 1; i< myCOL.length; i++) {
+			for (int i = 0; i< myCOL.length; i++) {
 				if (myCOL[i] !=null) {
 					myUnits[counter] = myCOL[i];
 					counter++;
 				}
 			}
-			for (int i = 1; i< myBLOCK.length; i++) {
+			for (int i = 0; i< myBLOCK.length; i++) {
 				if (myBLOCK[i] !=null) {
 					myUnits[counter] = myBLOCK[i];
 					counter++;
@@ -164,6 +205,11 @@ public class SudokuCell {
 		notPossibleValues[Number] = true;
 		clearCandidate(Number);
 	}
+	public void setNotPossibleValueByStrategie(int Number){
+		notPossibleValues[Number] = true;
+		notPossibleValuesByStrategie[Number] = true;
+		clearCandidate(Number);
+	}
 	public void reset(){
 		value = 0;
 		isSolved = false;
@@ -175,6 +221,11 @@ public class SudokuCell {
 			Arrays.fill(Candidates, true);
 			Arrays.fill(notPossibleValues, false);
 			notPossibleValues[0] = true;
+			for (int i = 1; i <= notPossibleValuesByStrategie.length; i++){
+				if (notPossibleValuesByStrategie[i] == true) {
+					clearCandidate(i);
+				}
+			}
 		}
 	}
 	public String getCoordinateWithSlash(){
@@ -183,4 +234,15 @@ public class SudokuCell {
 	public int getGridnumber(){
 		return gridNumber; 
 	}
+	public boolean isNumberACandidate( int number) {
+		boolean retrunboolean = Candidates[number];
+		return retrunboolean;
+	}
+	public int getROW(){
+		return row;
+	}
+	public int getCOL(){
+		return col;
+	}
+	
 }

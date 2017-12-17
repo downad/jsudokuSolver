@@ -82,9 +82,11 @@ public class SudokuView  extends JFrame {
 		
 	// Lösestrategien - buttons und Auswahlboxen
 	JButton autoSolve = new JButton("Automatik");						// AutoSolve - Top
-	JCheckBox findNakedSingle = new JCheckBox("NakedSingle");			// Methode Top 	Naked Single
-	JCheckBox findHiddenSingle = new JCheckBox("HiddenSingle");			// Methode Top 	Hidden Single
-	
+	JCheckBox findNakedSingle = new JCheckBox("Naked Single");			// Methode Top 	Naked Single
+	JCheckBox findHiddenSingle = new JCheckBox("Hidden Single");		// Methode Top 	Hidden Single
+	JCheckBox findNakedPair = new JCheckBox("Naked Pair");				// Methode Top 	Naked Pair
+	JCheckBox findHiddenPair = new JCheckBox("Hidden Pair");			// Methode Top 	Hidden Pair
+	JCheckBox findBlockLineInterception = new JCheckBox("Block-Line-Interception");			// Methode Top 	Block-Line-Interception
 
 	/*
 	 * 
@@ -190,6 +192,9 @@ public class SudokuView  extends JFrame {
         top.add(autoSolve);
         top.add(findNakedSingle);
         top.add(findHiddenSingle);
+        top.add(findNakedPair);
+        top.add(findHiddenPair);
+        top.add(findBlockLineInterception);
 //    	End Sudoku-Lösungs-Strategien (NORTH)
 
 //    	Ausgabefilter (SOUTH)
@@ -418,16 +423,16 @@ public class SudokuView  extends JFrame {
     public void foundValueWithStrategie(LinkedList<logEntrySolving> allChangedCells) {
     	int value = 0;		
     	int gridNumber = 0; 
-    	final long timeStart = System.currentTimeMillis(); 
-    	long timeEnd = System.currentTimeMillis(); 
-    	System.out.println("View: foundValueWithStrategie ");
+    	//final long timeStart = System.currentTimeMillis(); 
+    	//long timeEnd = System.currentTimeMillis(); 
+    	//System.out.println("View: foundValueWithStrategie ");
     	logEntrySolving changedCell;
     	int i = 0;
     	while (!allChangedCells.isEmpty()) {
     		changedCell = allChangedCells.remove(0);  
     		i++;
-    		timeEnd = System.currentTimeMillis(); 
-            System.out.println("View: foundValueWithStrategie "+i+". Durchlauf " + (timeEnd - timeStart) + " Millisek."); 
+    		//timeEnd = System.currentTimeMillis(); 
+            //System.out.println("View: foundValueWithStrategie "+i+". Durchlauf " + (timeEnd - timeStart) + " Millisek."); 
             gridNumber = changedCell.getGridNumber(); 
     		value = changedCell.getValue(); 
         	if ( value> 0) {
@@ -436,8 +441,8 @@ public class SudokuView  extends JFrame {
         		setValueInCellByGridNumber(false, gridNumber, value);
         	}        	  		
     	}
-        timeEnd = System.currentTimeMillis(); 
-        System.out.println("View: foundValueWithStrategie" + (timeEnd - timeStart) + " Millisek."); 
+        //timeEnd = System.currentTimeMillis(); 
+        //System.out.println("View: foundValueWithStrategie " + (timeEnd - timeStart) + " Millisek."); 
     }
 
     
@@ -490,17 +495,38 @@ public class SudokuView  extends JFrame {
      */
     public void setFindNakedSingle(ActionListener l){
         this.findNakedSingle.addActionListener(l);
-    }
-    
+    }    
     /*
      * Checkbox findHiddenSingle - Durchsuche die Candidates 
      * gibt es einen Candidaten nur einmal in der Unit?
      */
-    public void setHiddenNakedSingle(ActionListener l){
+    public void setHiddenSingle(ActionListener l){
         this.findHiddenSingle.addActionListener(l);
+    }
+    /*
+     * Checkbox findNakedSingle - Durchsuche die Candidates 
+     * gibt es einen Candidaten nur einmal ->NakedSingle
+     */
+    public void setFindNakedPair(ActionListener l){
+        this.findNakedPair.addActionListener(l);
+    }    
+    /*
+     * Checkbox findHiddenSingle - Durchsuche die Candidates 
+     * gibt es einen Candidaten nur einmal in der Unit?
+     */
+    public void setHiddenPair(ActionListener l){
+        this.findHiddenPair.addActionListener(l);
+    }
+    /*
+     * Checkbox findBlockLineInterception - Durchsuche die Candidates 
+     * gibt es einen Candidaten nur einmal in der Unit?
+     */
+    public void setBlockLineInterception(ActionListener l){
+        this.findBlockLineInterception.addActionListener(l);
     }
 }
 /*
+ * findNakedPair findBlockLineInterception
 private boolean[] solvingStategie = { false,
 		true, // naked Single
 		//true, // hidden Single

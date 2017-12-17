@@ -64,7 +64,11 @@ public class SudokuController {
         this._view.setChangeOnInputField(new changesOnInputfield());			//SudokuInputField[i].addPropertyChangeListener
         this._view.autoSolve(new autoSolving());								//autoSolving
         this._view.setFindNakedSingle(new findNakedSingle());					//Find Naked Single
-        this._view.setHiddenNakedSingle(new findHiddenSingle());				//Find Hidden Single
+        this._view.setHiddenSingle(new findHiddenSingle());						//Find Hidden Single
+        this._view.setFindNakedPair(new findNakedPair());						//Find Naked Pair
+        this._view.setHiddenPair(new findHiddenPair());							//Find Hidden Pair
+        this._view.setBlockLineInterception(new findBlockLineInterception());	//Find Block-Line-Interception
+        
         
     }
     /*
@@ -84,7 +88,7 @@ public class SudokuController {
         	System.out.println("Das Sudoku ist gelöst! " );
         	deactivateAllListener();
         	_model.setrhsPaneForGameIsSolved();
-        	//_model.printLog();
+        	_model.printLog();
         	//_model.printErrorLog();
         	_view.setLastrhsPaneText(_model.getRhsPaneText());        	
         }
@@ -201,8 +205,7 @@ public class SudokuController {
         }
     }
     /*
-     * wurde die CheckBox "NakedSingle" aktiviert/deaktiviert?, 
-     * ändere den Zustand der Methode
+     * wurde die CheckBox "NakedSingle" aktiviert/deaktiviert?, ändere den Zustand der Methode
      */
     class findNakedSingle implements ActionListener{
         public void actionPerformed(ActionEvent e) {
@@ -211,13 +214,39 @@ public class SudokuController {
         }
     }
     /*
-     * wurde die CheckBox "HiddenSingle" aktiviert/deaktiviert?, 
-     * ändere den Zustand der Methodee
+     * wurde die CheckBox "HiddenSingle" aktiviert/deaktiviert?, ändere den Zustand der Methode
      */
     class findHiddenSingle implements ActionListener{
         public void actionPerformed(ActionEvent e) {
         	// 4 - Hidden Single
         	_model.changeSolvingStrategie(4);
+        }
+    }
+    /*
+     * wurde die CheckBox "NakedSingle" aktiviert/deaktiviert?, ändere den Zustand der Methode
+     */
+    class findNakedPair implements ActionListener{
+        public void actionPerformed(ActionEvent e) {
+        	// 5 - Naked Single
+        	_model.changeSolvingStrategie(5);
+        }
+    }
+    /*
+     * wurde die CheckBox "HiddenSingle" aktiviert/deaktiviert?, ändere den Zustand der Methode
+     */ 
+    class findHiddenPair implements ActionListener{
+        public void actionPerformed(ActionEvent e) {
+        	// 6 - Hidden Single
+        	_model.changeSolvingStrategie(6);
+        }
+    }
+    /*
+     * wurde die CheckBox "HiddenSingle" aktiviert/deaktiviert?, ändere den Zustand der Methode
+     */ 
+    class findBlockLineInterception implements ActionListener{
+        public void actionPerformed(ActionEvent e) {
+        	// 6 - Hidden Single
+        	_model.changeSolvingStrategie(7);
         }
     }
 }

@@ -1,10 +1,13 @@
 package sudoko_solver;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+
+import javax.swing.BorderFactory;
 
 /**
  * Das Model ist komplett unabhängig von den anderen
@@ -67,15 +70,19 @@ public class SudokuModel  {
 	private String[] solvedByText = { "keine Angaben",
 			"given", 		//	IsSolvedBy 	1 = Vorgabe / default
 			"User",			// 	IsSolvedBy	2 = manuelle Eingabe
-			"naked single",	//  IsSolvedBy	3 = naked single
+			"Naked Single",	//  IsSolvedBy	3 = naked single
+			"Hidden Single",
+			"Naked Pair",
+			"Hidden Pair",
+			"Block-Line-Interception",
 			"Ende",			// 	IsSolvedBy 99 = Sudoku ist Solved
 	};
     private boolean[] solvingStrategie = { false,false,false, // 0,1,2 ohne Bedeutung
-    		false, //  3 - naked Single
-    		false, //  4 - hidden Single
-    		false, //  5 - 
-    		false, //  6 - 
-    		false, //  7 - 
+    		false, //  3 - Naked Single
+    		false, //  4 - Hidden Single
+    		false, //  5 - Naked Pair
+    		false, //  6 - Hidden Pair
+    		false, //  7 - Block-Line-Interaction
     		false, //  8 - 
     		false, //  9 - 
     		false, // 10 -
@@ -83,17 +90,18 @@ public class SudokuModel  {
     		
     };
     private String[] solvingStrategieText = { "1","2","3", // 0,1,2 ohne Bedeutung
-    		"Naked Single", 	//  3 - naked Single
-    		"Hidden Single", 	//  4 - hidden Single
-    		"5", //  5 - 
-    		"6", //  6 - 
-    		"7", //  7 - 
+    		"Naked Single", 			//  3 - Naked Single
+    		"Hidden Single", 			//  4 - Hidden Single
+    		"Naked Pair", 				//  5 - Naked Pair
+    		"Hidden Pair", 				//  6 - Hidden Pair
+    		"Block-Line-Interaction", 	//  7 - Block-Line-Interaction
     		"8", //  8 - 
     		"9", //  9 - 
     		"10", // 10 -
     		"11", // 11 -
     		
     };
+    // aktiviere und deaktiviere Solving-Strategien
     public void changeSolvingStrategie (int number){
     	if (solvingStrategie[number] == true) {
         	System.out.println("Model: changeSolvingStrategie - Change " +solvingStrategieText[number] + " to false");
@@ -103,12 +111,15 @@ public class SudokuModel  {
     		solvingStrategie[number] = true;
     	}
     }
-    // Koodinatenspeicher
+    // Koodinatenspeicher der ungelösten Zellen
     private ArrayList<String> coordinatsOfUnsolvedCells = new ArrayList<>();
     private int indexOfCoordinatsOfUnsolvedCells = 0;
+    
+    // setzte Counter auf 0
     private void setIndexOfCoodinatesOfUnsolvedCells(){
     	indexOfCoordinatsOfUnsolvedCells = 0;
     }
+    // erhöhe den Counter
     private void incIndexOfCoordinatsOfUnsolvedCells() {
     	// indexOfCoordinatsOfUnsolvedCells darf den Wert von coordiante..size() nicht überschreiten / erreichen 
     	if (indexOfCoordinatsOfUnsolvedCells +1 < coordinatsOfUnsolvedCells.size() && getIndexOfCoordinatsOfUnsolvedCells() != -1){
@@ -117,6 +128,7 @@ public class SudokuModel  {
     		indexOfCoordinatsOfUnsolvedCells = -1; // so lange ist der Array Nie!
     	}
     }
+    // hole den Counter
     private int getIndexOfCoordinatsOfUnsolvedCells() {
     	return indexOfCoordinatsOfUnsolvedCells;
     }
@@ -168,9 +180,12 @@ public class SudokuModel  {
 		// Mitglieder deiner Reihe
 		for (int i = 1; i<= 9; i++) {
 			for (int ii = 1; ii<= 9; ii++) {
-				cell.get(ROW[i][ii]).setMyROW(Arrays.copyOf(ROW[i], ROW[i].length));
+				cell.get(""+i+ii).setMyROW(Arrays.copyOf(ROW[i], ROW[i].length));
+				//System.out.println("ROW[i]["+ii+"] = " + ROW[i][ii]);
+				//System.out.println("ROW[i].length] = " + ROW[i].length);
 			}
 		}
+		
 		// Mitglieder deiner Spalte
 		for (int i = 1; i<= 9; i++) {
 			for (int ii = 1; ii<= 9; ii++) {
@@ -208,13 +223,26 @@ public class SudokuModel  {
 		String SudokuHilfe = "<table Border=1  >";
 		for (int row = 1; row<= jsudokuSolver.MAXROW; row++) {
 			SudokuHilfe = SudokuHilfe + "<tr>";
+			String bgColor[] = {"yellow", "gray"};
+			int color = 0;
 			for (int col = 1; col<= jsudokuSolver.MAXCOL; col++) {
 				int CellValueAsInt = cell.get(""+row+col).getCellValue();
 				String CellValueAsString = "";
 				if ( CellValueAsInt != 0) { 
 					CellValueAsString = cell.get(""+row+col).getCandidatesAsStringTable();
 				}
-				SudokuHilfe = SudokuHilfe + "<td  align=\"center\" valign=\"middle\" style=\"height:61px; width:46px \">" +
+				if (((row - 1) / 3) == 0 || (row - 1) / 3 == 2) {
+        			color = 1;
+        			if (((col - 1) / 3) == 1) {									// top left buttom right
+            			color = 0;
+            		} 
+        		} else {
+        			color = 1;
+        			if (((col - 1) / 3) == 0 || (col - 1) / 3 == 2) {									// top left buttom right
+            			color = 0;
+            		}
+        		}
+				SudokuHilfe = SudokuHilfe + "<td  align=\"center\" valign=\"middle\" style=\"height:61px; width:46px; background: "+bgColor[color] + "; \">" +
 				CellValueAsString + "</td>";							
 			}
 			SudokuHilfe = SudokuHilfe + "</tr>";
@@ -279,7 +307,8 @@ public class SudokuModel  {
 		}
 		if (iCanSetValue == true) {
 			// schreibe einen Logeintrag
-			logSolvingSteps.add(new logEntrySolving(getCoordinateStringWithSlashFromCoordinate(coordinate), value, isSolvedBy) );
+			createLogEntry(getCoordinateStringWithSlashFromCoordinate(coordinate), value, isSolvedBy);
+//			logSolvingSteps.add(new logEntrySolving(getCoordinateStringWithSlashFromCoordinate(coordinate), value, isSolvedBy) );
 			// setzte den Value
 			setValueInCell(coordinate, value, isSolvedBy);
 			//fülle den Speicher.
@@ -400,6 +429,7 @@ public class SudokuModel  {
 	 * berechne die Candidaten, lösche Zahlen aus den Listen die nicht in der Zelle sein können.
 	 */
 	private void  isCellUnsolvedSetValueAsNotPossible(String cellCoordinate, int Number ){
+		//System.out.println("Model: - isCellUnsolvedSetValueAsNotPossible - cellCoordinate= " + cellCoordinate + " Number " + Number);
 		if (cell.get(cellCoordinate).getIsSolved() == false) {
 			cell.get(cellCoordinate).setNotPossibleValue(Number);
 		}
@@ -422,10 +452,23 @@ public class SudokuModel  {
 		createListOfCandidatesInAllCells();
 		//createListOfCandidatesInAllCells();
 		String SudokuHilfe = "<table Border=1 >";
+		String bgColor[] = {"yellow", "gray"};
+		int color = 0;
 		for (int row = 1; row<= jsudokuSolver.MAXROW; row++) {
 			SudokuHilfe = SudokuHilfe + "<tr>";
 			for (int col = 1; col<= jsudokuSolver.MAXCOL; col++) {
-				SudokuHilfe = SudokuHilfe + "<td  align=\"center\" valign=\"middle\" style=\"height:61px; width:46px\">" +
+				if (((row - 1) / 3) == 0 || (row - 1) / 3 == 2) {
+        			color = 1;
+        			if (((col - 1) / 3) == 1) {									// top left buttom right
+            			color = 0;
+            		} 
+        		} else {
+        			color = 1;
+        			if (((col - 1) / 3) == 0 || (col - 1) / 3 == 2) {									// top left buttom right
+            			color = 0;
+            		}
+        		}
+				SudokuHilfe = SudokuHilfe + "<td  align=\"center\" valign=\"middle\" style=\"height:61px; width:46px; background: "+bgColor[color] + ";  \">" +
 				cell.get(""+row+col).getCandidatesAsStringTable() + "</td>";		
 			}
 			SudokuHilfe = SudokuHilfe + "</tr>";
@@ -504,7 +547,7 @@ public class SudokuModel  {
 	/*
 	 * ////////////////////////////////////////////////////////////////
 	 * //////
-	 * //////					ENDE umrechnungen GridNumber ->coordinate 
+	 * //////					ENDE Umrechnungen GridNumber ->coordinate 
 	 * //////
 	 * ////////////////////////////////////////////////////////////////
 	 */	
@@ -547,7 +590,19 @@ public class SudokuModel  {
 		}
 		return returnboolean;
 	}
-
+	private void createLogEntry(String coordinate, int value, int solvedBy){
+		//String[] solvedByLog = {"1","2"} ;
+		ArrayList<Integer> solvedByLog = new ArrayList<Integer>();
+		solvedByLog.add(3); // Naked Single
+		solvedByLog.add(4); // Hidden Single
+		if (solvedByLog.contains(solvedBy)== true) {
+			// die Zelle wurde gelöst, lege das Log an
+			logSolvingSteps.add(new logEntrySolving(coordinate, value, solvedBy) );
+		} else {
+			logSolvingSteps.add(new logEntrySolving(coordinate, value, solvedBy) );
+			logSolvingSteps.get(logSolvingSteps.size()-1).setHelperStategie(solvedBy);
+		}
+	}
 
 	
 	
@@ -560,20 +615,14 @@ public class SudokuModel  {
 		int oldValueUnsolvedCells = 1000; 	// egal, hauptsache groß
 		int unsolvedCells = 999;			// egal, hauptsache kleiner
 
-		ArrayList<String> coordinates;		// für die Coordinaten
-		
 		// initial Candidatenliste anlegen
 		createListOfCandidatesInAllCells();
 		
-		String cellCoordinate = "";
 		int counter = 0;					// Für die Anzahl der Schleifen
 		boolean foundValue = true;			// hat die Strategie einen Value erzeugt?
 		while (oldValueUnsolvedCells > unsolvedCells) {
 			setCoordinateOfUnsolvedCell();
-			foundValue = true; // damit der nächste While ein kein inc macht
-			
-			System.out.println("Model: zeige (nach setCoordinates..) CoodinatesOfUnsolvedCells.size " +  coordinatsOfUnsolvedCells.size());
-			System.out.println("Model: zeige (nach setCoordinates..) IndexOfCoodinatesOfUnsolvedCells " +  getIndexOfCoordinatsOfUnsolvedCells());
+			foundValue = true; // damit der nächste While kein inc macht
 
 			// berechne die Abbruchbedingung
 			oldValueUnsolvedCells = unsolvedCells;
@@ -590,42 +639,53 @@ public class SudokuModel  {
 					foundValue = false;
 					incIndexOfCoordinatsOfUnsolvedCells();
 				}
-				/*
-				if (getIndexOfCoordinatsOfUnsolvedCells()< 0) {
-					break;
-				}
-				*/
-				// solvingStrategie[3] -> naked single
+				// solvingStrategie[3] -> Naked Single
 				if (solvingStrategie[3]  == true && getIndexOfCoordinatsOfUnsolvedCells() != -1) {
-					System.out.println("Model: hole Koordinaten " + getCoordianteOfUnsolvedCells(foundValue));
 					foundValue = findNakedSingle(getCoordianteOfUnsolvedCells(foundValue)); 
-					System.out.println("Model: foundValue = " + foundValue);
-					
 				}
-				// solvingStrategie[4] -> hidden single
-				if (solvingStrategie[4]  == true) {
-					//foundValue = findHiddenSingle(getCoordianteOfUnsolvedCells(foundValue));		
+				// solvingStrategie[4] -> Hidden Single
+				if (solvingStrategie[4]  == true && getIndexOfCoordinatsOfUnsolvedCells() != -1) {
+					foundValue = findHiddenSingle(getCoordianteOfUnsolvedCells(foundValue));		
 				}
+				// solvingStrategie[5] -> Naked Pair
+				if (solvingStrategie[5]  == true && getIndexOfCoordinatsOfUnsolvedCells() != -1) {
+					foundValue = findNakedPair(getCoordianteOfUnsolvedCells(foundValue));		
+				}
+				// solvingStrategie[6] -> Hidden Pair
+				if (solvingStrategie[6]  == true && getIndexOfCoordinatsOfUnsolvedCells() != -1) {
+					//foundValue = findHiddenPair(getCoordianteOfUnsolvedCells(foundValue));		
+				} 
+				// solvingStrategie[7] -> Block-Line-Interception
+				if (solvingStrategie[7]  == true && getIndexOfCoordinatsOfUnsolvedCells() != -1) {
+					foundValue = findBlockLineInterception(getCoordianteOfUnsolvedCells(foundValue));		
+				} 
+				
 			
 			}
 			System.out.println("Model: While-Schleife - " + counter + " oldValueUnsolvedCells = " +oldValueUnsolvedCells + 
-					" unsolvedCells = " +unsolvedCells);	
+					" unsolvedCells = " +unsolvedCells);
+			//setIndexOfCoodinatesOfUnsolvedCells();
+			//break;
 		}
+		
 		return returnBoolean; //returnList;
 	}
+	/*
+	 * hole eine Cell-Coordinaten aus der Liste der noch nicht gelösten Zellen
+	 * wurde eine Zelle in der vorherigen Strategie gelöst, foundValue = true, so muss der Counter erhögt werden.
+	 */
 	private String getCoordianteOfUnsolvedCells(boolean foundValue){
 		String returnString ="";
+		
 		if (foundValue == true) {
 			incIndexOfCoordinatsOfUnsolvedCells(); 
-		}
+		} 
 		int IndexOfCoordinatsOfUnsolvedCells = getIndexOfCoordinatsOfUnsolvedCells();
 		if (IndexOfCoordinatsOfUnsolvedCells < 0) {
 			returnString="";
 		} else {
-			System.out.println("Model: getCoordianteOfUnsolvedCells -  IndexOfCoodinatesOfUnsolvedCells " +  IndexOfCoordinatsOfUnsolvedCells);
 			returnString = coordinatsOfUnsolvedCells.get(IndexOfCoordinatsOfUnsolvedCells);
 		}
-		
 		return returnString;
 	}
 	
@@ -634,163 +694,317 @@ public class SudokuModel  {
 	 */
 	public boolean findNakedSingle(String coordinate){
 		boolean returnBoolean = false; // nichts gefunden
+		int solvedBy = 3; // nakedSingle
+		//System.out.println("Model: findNakedSingle -  prüfe " + coordinate );
 		ArrayList<Integer> cellCandidates;
+		// coordinate = "" wenn coordinateOfUnsolveCell am Ende ist.
 		if (coordinate.equals("") == false) {
-			cellCandidates = cell.get(coordinate).getCandidates();
-			int solvedBy = 3; // nakedSingle
+			cellCandidates = cell.get(coordinate).getCandidates();			
 			if (cellCandidates.size()== 1) {
 				// public ArrayList<int[]> trySetValueInCell (String coordinate, int value, int isSolvedBy	
+				//System.out.println("Model: findNakedSingle -  " + coordinate + " Value= " + cellCandidates.get(0));
 				returnBoolean = trySetValueInCell (coordinate, cellCandidates.get(0), solvedBy);
 			}
 		}
 		return returnBoolean;
 	}
 	/*
-	public LinkedList<int[]> findNakedSingle_old(String coordinate){
-	//public ArrayList<int[]> findNakedSingle(String coordinate){
-		LinkedList<int[]> returnList = new LinkedList<int[]>();
-		//ArrayList<int[]> returnList = new ArrayList<int[]>();
-		ArrayList<Integer> cellCandidates;
-		cellCandidates = cell.get(coordinate).getCandidates();
-		int solvedBy = 3; // nakedSingle
-		if (cellCandidates.size()== 1) {
-			// public ArrayList<int[]> trySetValueInCell (String coordinate, int value, int isSolvedBy	
-			//returnList = trySetValueInCell (coordinate, cellCandidates.get(0), solvedBy);
-		}
-		return returnList;
-	}
-	*/
-	/*
-	 * Methoden - findNakedSingle
+	 * Methoden - findHiddenSingle
 	 */
+	public boolean findHiddenSingle(String coordinate){
+		boolean returnBoolean = false; // nichts gefunden
+		int solvedBy = 4 ; // Hidden Single
+		//System.out.println("Model: findHiddenSingle -  prüfe " + coordinate );
+		
+		int[] cellCandidatesInUnit = new int[(jsudokuSolver.MAXNUMBER+1)];
+		String[] unitCoordinate = new String[jsudokuSolver.MAXNUMBER];
+		// coordinate = "" wenn coordinateOfUnsolveCell am Ende ist.
+		if (coordinate.equals("") == false ) {
+			ArrayList<Integer> cellCandidates = cell.get(coordinate).getCandidates();
+			if ( cellCandidates.size() > 1) {
+				// hole unit, 
+				for (int unitNumber = 1; unitNumber <=3; unitNumber++) {
+					//System.out.println("Model: findHiddenSingle -  Unit " + unitNumber );
+					cellCandidatesInUnit = new int[(jsudokuSolver.MAXNUMBER+1)];
+					unitCoordinate = getUnitCoordinateRowColBlockByNumber(coordinate , unitNumber);
+					cellCandidatesInUnit = SumCellCandidatesInUnit(cellCandidatesInUnit, coordinate);
+					//cellCandidatesInUnit = cell.get(coordinate).getCandidates();
+					for (int i = 0; i < unitCoordinate.length; i++){
+						// ist es eine andere Koordinate? und ist die Zelle unsolved?
+						if (unitCoordinate[i].equals(coordinate)== false && cell.get(unitCoordinate[i]).getIsSolved() == false){
+							cellCandidatesInUnit = SumCellCandidatesInUnit(cellCandidatesInUnit, unitCoordinate[i]);
+						}
+					}
+					for (int i = 1; i < cellCandidatesInUnit.length; i++) {
+						//System.out.println("Model: findHiddenSingle - " + cellCandidatesInUnit[i] + " mal die " + i);
+						if (cellCandidatesInUnit[i] == 1 && cellCandidates.contains(i)){
+							//System.out.println("Model: findHiddenSingle - gefunden Koordinate " + coordinate + " mal die " + i);
+							//System.out.println("Model: findHiddenSingle - gefunden Wert " + cellCandidatesInUnit[i] + " mal die " + i);
+							returnBoolean = trySetValueInCell (coordinate, i, solvedBy);
+						}
+					}
+				}
+			}
+
+
+		}
+		return returnBoolean;
+	}
 	/*
-	public LinkedList<int[]> findHiddenSingle(String coordinate){
-	//public ArrayList<int[]> findNakedSingle(String coordinate){
-		LinkedList<int[]> returnList = new LinkedList<int[]>();
-		//ArrayList<int[]> returnList = new ArrayList<int[]>();
+	 * Hilfsmethode der find Hidden Pair
+	 * Addiere alle Candidaten auf
+	 */
+	private int[] SumCellCandidatesInUnit(int[] cellCandidatesInUnit, String coordinate) {
+		ArrayList<Integer> cellCandidates = cell.get(coordinate).getCandidates();;
+		for (int i = 1; i <= cellCandidatesInUnit.length; i++) {
+			if (cellCandidates.contains(i)){
+				cellCandidatesInUnit[i]++;
+			}
+		}
+		return cellCandidatesInUnit;
+	}
+		
+		
+	/*
+	 * Methoden - findNakedPair
+	 */
+	public boolean findNakedPair(String coordinate){
+		boolean returnBoolean = false; // nichts gefunden
+		int solvedBy = 5 ; // Naked Pair
+		//System.out.println("Model: findNakedPair -  prüfe " + coordinate );
 		ArrayList<Integer> cellCandidates;
-		cellCandidates = cell.get(coordinate).getCandidates();
-		int solvedBy = 3; // nakedSingle
-		if (cellCandidates.size()== 1) {
-			// public ArrayList<int[]> trySetValueInCell (String coordinate, int value, int isSolvedBy	
-			returnList = trySetValueInCell (coordinate, cellCandidates.get(0), solvedBy);
-		}
-		return returnList;
-	}
-	*/
-}
+		ArrayList<Integer> maybeNakedPair;
+		ArrayList<String> maybeNakedPairCoordinate = new ArrayList<String> ();
+		//maybeNakedPairCoordinate.add(coordinate);
+		String[] unitCoordinate = new String[jsudokuSolver.MAXNUMBER];
+		ArrayList<String>  unsolvedUnitCells = new ArrayList<String> ();
+		// coordinate = "" wenn coordinateOfUnsolveCell am Ende ist.
+		if (coordinate.equals("") == false) {
+			cellCandidates = cell.get(coordinate).getCandidates();
+			// hat die Zelle 2 Candidaten?
+			if (cellCandidates.size()== 2) {
+				// Hole die Coorditante der Unit row = 1, col = 2, block = 3
+				for (int unitNumber = 1; unitNumber <=3; unitNumber++) {
+					unitCoordinate = getUnitCoordinateRowColBlockByNumber(coordinate , unitNumber);
+					maybeNakedPairCoordinate = new ArrayList<String> ();
+					maybeNakedPairCoordinate.add(coordinate);
+					// durchlaufe alle Koordinaten, 
+					for (int i = 0; i < unitCoordinate.length; i++){
+						//ist es eine andere Koordinate? und ist die Zelle unsolved?
+						if (unitCoordinate[i].equals(coordinate)== false && cell.get(unitCoordinate[i]).getIsSolved() == false){
+							// hole die andidaten, sind sie gleich
+							maybeNakedPair = cell.get(unitCoordinate[i]).getCandidates();
+							if (maybeNakedPair.equals(cellCandidates)) {
+								maybeNakedPairCoordinate.add(unitCoordinate[i]);
+								//System.out.println("Model: findNakedPair -  Zelle gefunden " + unitCoordinate[i] );
+							}
+						}	
+					}
+					if (maybeNakedPairCoordinate.size()==2){
+						// lösche in allen anderen Koordianten der Zelle diese Candidaten
+						// resete  maybeNakedPairCoordinate für den nächsten durchlauf
+						//System.out.println("Model: findNakedPair -  Zellen gefunden " + maybeNakedPairCoordinate.get(0) 
+						//	+ " und " + maybeNakedPairCoordinate.get(1) );
+						unsolvedUnitCells = getUnsolvedUnitCells(maybeNakedPairCoordinate,unitCoordinate );
+						createLogEntry(maybeNakedPairCoordinate.get(0), 0, solvedBy);
+						createLogEntry(maybeNakedPairCoordinate.get(1), 0, solvedBy);
+						//returnBoolean = true; // sonst endlosschleife
+						// lösche die Kandidaten der anderne Units-Zellen
+						deleteCandidatesInUnit( unsolvedUnitCells,  cellCandidates);
+						/*
+						for (int cellInUnit = 0; cellInUnit < unsolvedUnitCells.size(); cellInUnit++) {
+							for (int cellCandidateNumber = 0; cellCandidateNumber < cellCandidates.size(); cellCandidateNumber++){
+								cell.get(unsolvedUnitCells.get(cellInUnit)).setNotPossibleValueByStrategie(cellCandidates.get(cellCandidateNumber));
+//								System.out.println("Model: findNakedPair - Lösche in Zelle " + unsolvedUnitCells.get(cellInUnit) + " den Candidate " + cellCandidates.get(cellCandidateNumber));
+							}
+						}
+						*/
+						
+					}					
+				}
+			}
+			
 
-/*
-public ArrayList<int[]> findNakedSingle_old(){
-	ArrayList<int[]> returnList = new ArrayList<int[]>();
-	//resetCandidates();
-	// hole alle ungelösten Zellen
-	ArrayList<String> coordinates = getUnsolvedCell();
-	ArrayList<Integer> cellCandidates;
-	// durchlaufe sie und suche nach der, in der nur ein Candidate steht.
-	for (int i = 0; i < coordinates.size(); i++){
-		cellCandidates = cell.get(coordinates.get(i)).getCandidates();
-		//System.out.println("Model: - findNakedSingle - List of unsolved Cells |" + coordinates.get(i) + "| Anzahl der Candidates; " + cellCandidates.size());
-		if (cellCandidates.size()== 1) {
-			int candidateValue = cellCandidates.get(0);
-			System.out.println("Model: - findNakedSingle - nur 1 Candidate in Cell |" + coordinates.get(i) + 
-					"| Zellenname: " + cell.get(coordinates.get(i)).getName() + " Wert: "  + candidateValue);// +
-					//" Candidates: " + cellCandidates.get(i));
-			//  IsSolvedBy	3 = naked single
-			//setCellValue(String coordinate, int value, int isSolvedBy)
-			int setCellDouble[] = new int[2];
-			setCellDouble[0] = cell.get(coordinates.get(i)).getGridnumber();
-			setCellDouble[1] = candidateValue;
-			setValueInCell(coordinates.get(i),candidateValue, 3);
-			returnList.add(setCellDouble);
+		}
+		return returnBoolean;
+	}
+	/*
+	 * Hilfsmethode zu findNakedPair
+	 * hole aus der Unit nur die Koordinaten ungelöste Zellen, die nicht in doNotChange sind.
+	 */
+	private ArrayList<String>getUnsolvedUnitCells(ArrayList<String> doNotChange, String[] unitCoordinate ){
+		ArrayList<String>  returnString = new ArrayList<String> ();
+		for (int i = 0; i < unitCoordinate.length; i++){
+			if (cell.get(unitCoordinate[i]).getIsSolved() == false){
+				if (doNotChange.contains(unitCoordinate[i]) == false){
+					returnString.add(unitCoordinate[i]);
+				}
+			}
+		}
+		return returnString;
+	}
+	/*
+	 * abhängig von der unitNumber 1 -> row, 2 -> col, 3 -> block
+	 * wird ein Koordinaten-String zurückgegebeben
+	 */
+	private String[] getUnitCoordinateRowColBlockByNumber(String coordinate, int unitNumber){
+		String[] returnString = new String[jsudokuSolver.MAXNUMBER];
+		if (unitNumber == 1) {
+			returnString = cell.get(coordinate).getMyROW();
+		} 
+		if (unitNumber == 2) {
+			returnString = cell.get(coordinate).getMyCOL();
+		} 
+		if (unitNumber == 3) {
+			returnString = cell.get(coordinate).getMyBLOCK();
+		} 
+		return returnString;
+	}
+	/*
+	 * lösche in der CoordinateListe unsolvedUnitCells die candidaten
+	 */
+	private void deleteCandidatesInUnit(ArrayList<String> unsolvedUnitCells, ArrayList<Integer> cellCandidates) {
+		// lösche die Kandidaten der anderne Units-Zellen
+		for (int cellInUnit = 0; cellInUnit < unsolvedUnitCells.size(); cellInUnit++) {
+			for (int cellCandidateNumber = 0; cellCandidateNumber < cellCandidates.size(); cellCandidateNumber++){
+				cell.get(unsolvedUnitCells.get(cellInUnit)).setNotPossibleValueByStrategie(cellCandidates.get(cellCandidateNumber));
+//				System.out.println("Model: findNakedPair - Lösche in Zelle " + unsolvedUnitCells.get(cellInUnit) + " den Candidate " + cellCandidates.get(cellCandidateNumber));
+			}
 		}
 	}
-	return returnList;
-}
-*/
+	
+	/*
+	 * Methoden - findBlockLineInterception
+	 */
+	public boolean findBlockLineInterception(String coordinate){
+		boolean returnBoolean = false; // nichts gefunden
+		int solvedBy = 7 ; // Naked Pair
+		System.out.println("Model: findBlockLineInterception -  prüfe " + coordinate );
+		boolean debug = false;
+		if (coordinate.equals("13") == true){
+			System.out.println("Model: findBlockLineInterception -  prüfe " + "8/9" );
+			debug = true;
+		}
+		ArrayList<Integer> cellCandidates;	// Kandidaten der Aktuellen Zelle
+		String[] unitCoordinate = new String[jsudokuSolver.MAXNUMBER];
+		unitCoordinate = getUnitCoordinateRowColBlockByNumber(coordinate , 3); // 3 = BLOCK
+		ArrayList<String> BLICoordinate = new ArrayList<String>();		
+		ArrayList<Integer> BLICandidate = new ArrayList<Integer>();
+		
+		//maybeNakedPairCoordinate.add(coordinate);
+		ArrayList<String>  unsolvedUnitCells = new ArrayList<String> ();
+		
+		// coordinate = "" wenn coordinateOfUnsolveCell am Ende ist.
+		if (coordinate.equals("") == false) {
+			cellCandidates = cell.get(coordinate).getCandidates();
+			// hat die Zelle mehr als 1 Candidaten?
+			if (cellCandidates.size() > 1) {
+				// durchlaufe alle Candidaten und schaue in welchen Zelle des Blockes sie noch vorkommen
+				for (int cellCandidateNumber = 0; cellCandidateNumber < cellCandidates.size(); cellCandidateNumber++){
+					// durchlaufe alle Felder im BLOCK
+					BLICoordinate = new ArrayList<String>();		
+					BLICandidate = new ArrayList<Integer>();
+					for (int unitNumber = 0; unitNumber < unitCoordinate.length; unitNumber++) {
+						if (cell.get(unitCoordinate[unitNumber]).getIsSolved() == false) {
+							if (debug == true){
+								//System.out.println("Model: findBlockLineInterception -  coordinaten " + unitCoordinate[unitNumber] + " Candidaten: " + 
+								//		cell.get(unitCoordinate[unitNumber]).getCandidatesAsString());
+							}
+							if (cell.get(unitCoordinate[unitNumber]).isNumberACandidate(cellCandidates.get(cellCandidateNumber)) == true) {
+								BLICoordinate.add(unitCoordinate[unitNumber]);
+							}
+						}
 
-/*
- *  ////////////////////////////////////////////////////////////////////////////////////////////////////////
- */
+					}
+					if (BLICoordinate.isEmpty() == false || BLICoordinate.size()<3 ) {
+						// es gibt mindest 1 Zelle des BLOCK mit der Zahl oder maximal 3
+						// prüfe ob die Coordinaten in einer ROW oder COL sind.
+						boolean sameROW = true;
+						boolean sameCOL = true;
+						int rowOfCoordiante = cell.get(coordinate).getROW();
+						int colOfCoordiante = cell.get(coordinate).getCOL();
+						BLICandidate.add(cellCandidates.get(cellCandidateNumber));
+						System.out.println("Model: findBlockLineInterception - BLICoordinate " + printStringArrayList(BLICoordinate));
+						for (int i = 0; i < BLICoordinate.size(); i++) {
+							if (debug == true){
+								//System.out.println("Model: findBlockLineInterception - rowOfCoordiante = " + rowOfCoordiante);
+								//System.out.println("Model: findBlockLineInterception - BLICoordinate = " + BLICoordinate.get(i) +" " + cell.get(BLICoordinate.get(i)).getROW());
+							
+								//System.out.println("Model: findBlockLineInterception - colOfCoordiante = " + colOfCoordiante);
+								//System.out.println("Model: findBlockLineInterception - BLICoordinate = " + BLICoordinate.get(i) +" "  + cell.get(BLICoordinate.get(i)).getCOL());
+								
+							}
+							if (rowOfCoordiante != cell.get(BLICoordinate.get(i)).getROW()) {
+								sameROW = false;
+							}
+							if (colOfCoordiante != cell.get(BLICoordinate.get(i)).getCOL()) {
+								sameCOL = false;
+							}
+						}
+						if (sameROW == true) {
+							// gleiche ROW
+							// hole die Reihe, lösche daraus die Liste
+							// und lösche die Kandidaten
+							unitCoordinate = getUnitCoordinateRowColBlockByNumber(coordinate , 1); // 1 = ROW
+							unsolvedUnitCells = getUnsolvedUnitCells(BLICoordinate,unitCoordinate );
+							//createLogEntry(maybeNakedPairCoordinate.get(0), 0, solvedBy);
+							// lösche die Kandidaten der anderne Units-Zellen
+							deleteCandidatesInUnit( unsolvedUnitCells,  BLICandidate);
+							if (debug == true){
+								//for (int n = 0; n < unsolvedUnitCells.size(); n++) {
+									System.out.println("Model: findBlockLineInterception - sameROW");
+									System.out.println("Model: findBlockLineInterception -Cell ["+coordinate+"] BLICoordinate " + printStringArrayList(BLICoordinate));
+									System.out.println("Model: findBlockLineInterception - unitCoordinate " + printStringArray(unitCoordinate));
+									System.out.println("Model: findBlockLineInterception - unsolvedUnitCells.size() " + unsolvedUnitCells.size());
+									System.out.println("Model: findBlockLineInterception -  lösche in den Koordinaten " + printStringArrayList(unsolvedUnitCells)
+									+ " die Candidaten: " + BLICandidate.get(0));
+								//}
+							}
+							
+							
+						}
+						if (sameCOL == true) {
+							// gleiche COL
+							// hole die Reihe, lösche daraus die Liste
+							// und lösche die Kandidaten
+							unitCoordinate = getUnitCoordinateRowColBlockByNumber(coordinate , 2); // 2 = COL
+							unsolvedUnitCells = getUnsolvedUnitCells(BLICoordinate,unitCoordinate );
+							//createLogEntry(maybeNakedPairCoordinate.get(0), 0, solvedBy);
+							// lösche die Kandidaten der anderne Units-Zellen
+							deleteCandidatesInUnit( unsolvedUnitCells,  BLICandidate);
+							if (debug == true){
+								//for (int n = 0; n < unsolvedUnitCells.size(); n++) {
+									System.out.println("Model: findBlockLineInterception - sameCOL");
+									System.out.println("Model: findBlockLineInterception -Cell ["+coordinate+"] BLICoordinate " + printStringArrayList(BLICoordinate));
+									System.out.println("Model: findBlockLineInterception - unitCoordinate " + printStringArray(unitCoordinate));
+									System.out.println("Model: findBlockLineInterception - unsolvedUnitCells.size() " + unsolvedUnitCells.size());
+									System.out.println("Model: findBlockLineInterception -  lösche in den Koordinaten " + printStringArrayList(unsolvedUnitCells)
+									+ " die Candidaten: " + BLICandidate.get(0));
+								//}
+							}
+						}
+						
+					}
 
-/*
- * Teste ob der Value in die Zelle passt.
- * Es gibt keinen Value in Unit ROW, COL und BLOCK
- */
-/*
-public boolean testAndSetValue(int gridNumber, int value, int isSolvedBy){
-	boolean testAndSet = false;
-	int row = getRowFromNumber(gridNumber);
-	int col = getColFromNumber(gridNumber);
-	String coordinate = ""+row+col;
-	//System.out.println("Model: testAndSetValue: - Teste Value: " + value + " in Zelle " + gridNumber + " [" + row + "/" + col + "]");
-	if (cell.get(coordinate).getIsSolved() == false) {
-		//Test kann die Zahl in die Reihe, die Spalte und Block engesetzt werden?
-		if (testValueInUnit("all", coordinate, value) == true) {
-			setValueInCell(coordinate, value, isSolvedBy);
-			testAndSet = true;
+				}
+			}
 		}
-	}		
-	return testAndSet;
-}
-*/
-/*
- * Hilfsmethode zu testAndSetValue
- */
-/*
-private boolean testValueInUnit(String unit, String coordinate, int value){
-	boolean allIsOK = true;
-	ArrayList<String> unitCoordinate = new ArrayList<>();
-	switch (unit) {
-    case "all": 
-    case "row": 
-    case "col":  
-    case "block":  
-    	String[] rowCoordinate = cell.get(coordinate).getMyROW();
-    	String[] colCoordinate = cell.get(coordinate).getMyCOL();
-    	String[] blockCoordinate = cell.get(coordinate).getMyBLOCK();        	
-    	for (int i = 1 ; i < (rowCoordinate.length -1); i++){
-    		if (unit.equals("all") || unit.equals("row")) {
-        		if (cell.get(rowCoordinate[i]).getIsSolved() == true){
-        			unitCoordinate.add(rowCoordinate[i]);
-        		}
-    		}
-    		if (unit.equals("all") || unit.equals("col")) {
-	        	if (cell.get(colCoordinate[i]).getIsSolved() == true){
-        			unitCoordinate.add(colCoordinate[i]);
-        		}
-    		}
-	        	if (unit.equals("all") || unit.equals("block")) {
-	        		if (cell.get(blockCoordinate[i]).getIsSolved() == true){
-        			unitCoordinate.add(blockCoordinate[i]);
-        		}
-	        	}
-    	}
-    	allIsOK = testThisValueInCoordinateList(value, unitCoordinate);
-        break;
-        
-    default: allIsOK = false;;
-        break;
+		return returnBoolean;
 	}
-	return allIsOK;
-}
-*/
-/*
- * Hilfsmethode zu testAndSetValue
- */
-/*
-private boolean testThisValueInCoordinateList(int value, ArrayList<String> coordinateList){
-	// nur solved Cells sind in der Liste
-	boolean valueIsAllowed = true;
-	for (int i = 0; i < coordinateList.size(); i++){
-		if (value == cell.get(coordinateList.get(i)).getCellValue()){
-			valueIsAllowed = false;
-			System.out.println("testThisValueInCoordinateList - Der Value " + value + " ist in der Zelle " + coordinateList.get(i) + " schon gesetzt");
+	private String printStringArrayList (ArrayList<String> stringArrayList){
+		String returnString ="";
+		for (int n = 0; n < stringArrayList.size(); n++) {
+			returnString = returnString + " " + stringArrayList.get(n);
 		}
+		return returnString;
 	}
-	return valueIsAllowed;
+	private String printStringArray (String[] stringArray){
+		String returnString ="";
+		for (int n = 0; n < stringArray.length; n++) {
+			returnString = returnString + " " + stringArray[n];
+		}
+		return returnString;
+	}
+	
+	
 }
-*/
-/*
- *  /////////////////////////////////////////////////////////////////////////////////////////////////////////
- */
